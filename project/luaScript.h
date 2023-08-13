@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <string_view>
-#include <map>
+#include <unordered_map>
 #include <functional>
 #include <filesystem>
 #include <cstring>
@@ -22,8 +22,8 @@
 class LuaScript 
 {
 private:
-    std::map<std::string_view, void*> mUserPtr; /**< Map of user data pointers. */
-    std::map<std::string_view, FuncDescription> mFuncDesc; /**< Map of function descriptions. */
+    std::unordered_map<std::string_view, void*> mUserPtr; /**< Map of user data pointers. */
+    std::unordered_map<std::string_view, FuncDescription> mFuncDesc; /**< Map of function descriptions. */
     lua_State* L; /**< Lua state instance. */
     std::filesystem::path mPath; /**< Path to the Lua script. */
     int mRetValCount; /**< Return value count for Lua function calls. */
