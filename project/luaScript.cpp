@@ -1,11 +1,13 @@
 #include "luaScript.h"
 
 LuaScript::LuaScript()
-: sUserPtr(), L(luaL_newstate()), mFuncDesc(), mPath(""), mRetValCount(0)
-{}
+: mUserPtr(), L(luaL_newstate()), mFuncDesc(), mPath(""), mRetValCount(0)
+{
+    luaL_openlibs(L);
+}
 
 LuaScript::LuaScript(const std::filesystem::path& path)
-: sUserPtr(), L(luaL_newstate()), mFuncDesc(), mPath(path), mRetValCount(0)
+: mUserPtr(), L(luaL_newstate()), mFuncDesc(), mPath(path), mRetValCount(0)
 {
     luaL_openlibs(L);
 }
@@ -15,13 +17,13 @@ LuaScript::~LuaScript()
     lua_close(L);
 }
 
-void LuaScript::regFunc(const std::string& funcName, const FuncDescription& funcDesc)
+void LuaScript::regFunc(std::string_view funcName, const FuncDescription& funcDesc)
 {
     if(!mFuncDesc.contains(funcName))
     mFuncDesc[funcName] = funcDesc;
 }
 
-void LuaScript::regFunc(std::function<int(LuaScript&)> func, const std::string& funcName, const FuncDescription& funcDesc)
+void LuaScript::regFunc(std::function<int(LuaScript&)> func, std::string_view funcName, const FuncDescription& funcDesc)
 {
     auto cFunPtr = func.target<int(*)(LuaScript&)>();
     static auto luaCFunc = [this, cFunPtr](lua_State* L) -> int {
@@ -30,7 +32,7 @@ void LuaScript::regFunc(std::function<int(LuaScript&)> func, const std::string& 
 
     auto luaBaseFunc = Lambda::ptr<int, lua_CFunction>(luaCFunc);
 
-    lua_register(L, funcName.c_str(), luaBaseFunc);
+    lua_register(L, funcName.data(), luaBaseFunc);
     regFunc(funcName, funcDesc);
 }
 
@@ -47,17 +49,17 @@ void LuaScript::compile()
     }
 }
 
-void LuaScript::compileString(const std::string& luaCode)
+void LuaScript::compileString(std::string_view luaCode)
 {
-    if(luaL_dostring(L, luaCode.c_str()))
+    if(luaL_dostring(L, luaCode.data()))
     {
         std::cerr << "Failed to load lua script with path[" << mPath << "] - " << lua_tostring(L, -1) << std::endl;
     }
 }
 
-void LuaScript::doFunc(const std::string& funcName)
+void LuaScript::doFunc(std::string_view funcName)
 {
-    lua_getglobal(L, funcName.c_str());
+    lua_getglobal(L, funcName.data());
 
     if(!mFuncDesc.contains(funcName))
     {
@@ -137,8 +139,8 @@ void LuaScript::doFunc(const std::string& funcName)
         }
         case ValueType::string:
         {
-            std::string value = lua_tostring(L, -index);
-            std::string& valueRef = *static_cast<std::string*>(retval.mValuePtr);
+            std::string_view value = lua_tostring(L, -index);
+            std::string_view& valueRef = *static_cast<std::string_view*>(retval.mValuePtr);
             valueRef = value;
             break;
         }
@@ -150,7 +152,7 @@ void LuaScript::doFunc(const std::string& funcName)
     lua_pop(L, retVals.size());
 }
 
-std::string LuaScript::toString(const int& index)
+std::string_view LuaScript::toString(int index)
 {
     if(!lua_isstring(L, index))
     {
@@ -160,7 +162,7 @@ std::string LuaScript::toString(const int& index)
     return lua_tostring(L, index);
 }
 
-int LuaScript::toInteger(const int& index)
+int LuaScript::toInteger(int index)
 {
     if(!lua_isinteger(L, index))
     {
@@ -170,7 +172,7 @@ int LuaScript::toInteger(const int& index)
     return lua_tointeger(L, index);
 }
 
-int LuaScript::toBooleam(const int& index)
+int LuaScript::toBooleam(int index)
 {
     if(!lua_isboolean(L, index))
     {
@@ -180,7 +182,7 @@ int LuaScript::toBooleam(const int& index)
     return lua_toboolean(L, index);
 }
 
-double LuaScript::toNumber(const int& index)
+double LuaScript::toNumber(int index)
 {
     if(!lua_isnumber(L, index))
     {
@@ -190,25 +192,25 @@ double LuaScript::toNumber(const int& index)
     return lua_tonumber(L, index);
 }
 
-void LuaScript::pushString(const std::string& string)
+void LuaScript::pushString(std::string_view string)
 {
-    lua_pushstring(L, string.c_str());
+    lua_pushstring(L, string.data());
     mRetValCount++;
 }
 
-void LuaScript::pushInteger(const int& integer)
+void LuaScript::pushInteger(int integer)
 {
     lua_pushinteger(L, integer);
     mRetValCount++;
 }
 
-void LuaScript::pushBoolean(const bool& boolean)
+void LuaScript::pushBoolean(bool boolean)
 {
     lua_pushinteger(L, boolean);
     mRetValCount++;
 }
 
-void LuaScript::pushNumber(const double& number)
+void LuaScript::pushNumber(double number)
 {
     lua_pushinteger(L, number);
     mRetValCount++;
