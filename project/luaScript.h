@@ -22,11 +22,11 @@
 class LuaScript 
 {
 private:
-    std::unordered_map<std::string_view, void*> mUserPtr; /**< Map of user data pointers. */
-    std::unordered_map<std::string_view, FuncDescription> mFuncDesc; /**< Map of function descriptions. */
-    lua_State* L; /**< Lua state instance. */
-    std::filesystem::path mPath; /**< Path to the Lua script. */
-    int mRetValCount; /**< Return value count for Lua function calls. */
+    std::unordered_map<std::string_view, void*> mUserPtr = {}; /**< Map of user data pointers. */
+    std::unordered_map<std::string_view, FuncDescription> mFuncDesc = {}; /**< Map of function descriptions. */
+    lua_State* L = nullptr; /**< Lua state instance. */
+    std::filesystem::path mPath = ""; /**< Path to the Lua script. */
+    int mRetValCount = 0; /**< Return value count for Lua function calls. */
 
 public:
     /**
@@ -38,7 +38,7 @@ public:
      * @brief Constructor with script path. Initializes Lua state and loads standard libraries.
      * @param path Path to the Lua script file.
      */
-    LuaScript(const std::filesystem::path& path);
+    explicit LuaScript(const std::filesystem::path& path);
 
     /**
      * @brief Destructor. Closes the Lua state.
@@ -89,7 +89,7 @@ public:
      * @param index Index of the Lua value on the stack.
      * @return Converted integer value.
      */
-    int toInteger(int index);
+    long long toInteger(int index);
 
     /**
      * @brief Converts a Lua value at the specified index to a boolean.
@@ -166,7 +166,7 @@ public:
     {
         if(mUserPtr.contains(name))
             return mUserPtr[name];
-        throw std::runtime_error("Failed to get user data");
+        throw std::invalid_argument("Failed to get user data");
     }
 };
 

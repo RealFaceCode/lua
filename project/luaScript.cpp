@@ -1,32 +1,35 @@
 #include "luaScript.h"
 
 LuaScript::LuaScript()
-: mUserPtr(), L(luaL_newstate()), mFuncDesc(), mPath(""), mRetValCount(0)
 {
-    luaL_openlibs(L);
+    L = ::luaL_newstate();
+    ::luaL_openlibs(L);
 }
 
 LuaScript::LuaScript(const std::filesystem::path& path)
-: mUserPtr(), L(luaL_newstate()), mFuncDesc(), mPath(path), mRetValCount(0)
+: mPath(path)
 {
-    luaL_openlibs(L);
+    L = ::luaL_newstate();
+    ::luaL_openlibs(L);
 }
 
 LuaScript::~LuaScript()
 {
-    lua_close(L);
+    ::lua_close(L);
 }
 
 void LuaScript::regFunc(std::string_view funcName, const FuncDescription& funcDesc)
 {
-    if(!mFuncDesc.contains(funcName))
-    mFuncDesc[funcName] = funcDesc;
+    ::lua_getglobal(L, funcName.data());
+    if(!mFuncDesc.contains(funcName) && !lua_isfunction(L, -1))
+        mFuncDesc[funcName] = funcDesc;
 }
 
 void LuaScript::regFunc(std::function<int(LuaScript&)> func, std::string_view funcName, const FuncDescription& funcDesc)
 {
     auto cFunPtr = func.target<int(*)(LuaScript&)>();
-    static auto luaCFunc = [this, cFunPtr](lua_State* L) -> int {
+    static auto luaCFunc = [this, cFunPtr](lua_State const*)
+    {
         return (*cFunPtr)(*this);
     };
 
@@ -59,7 +62,7 @@ void LuaScript::compileString(std::string_view luaCode)
 
 void LuaScript::doFunc(std::string_view funcName)
 {
-    lua_getglobal(L, funcName.data());
+    ::lua_getglobal(L, funcName.data());
 
     if(!mFuncDesc.contains(funcName))
     {
@@ -74,22 +77,23 @@ void LuaScript::doFunc(std::string_view funcName)
     {
         switch (arg.mValueType)
         {
-        case ValueType::none:
+        using enum ValueType;
+        case none:
             break;
-        case ValueType::integer:
-            lua_pushinteger(L, *static_cast<int*>(arg.mValuePtr));
+        case integer:
+            ::lua_pushinteger(L, *static_cast<int*>(arg.mValuePtr));
             break;
-        case ValueType::boolean:
-            lua_pushboolean(L, *static_cast<bool*>(arg.mValuePtr));
+        case boolean:
+            ::lua_pushboolean(L, *static_cast<bool*>(arg.mValuePtr));
             break;
-        case ValueType::float_number:
-            lua_pushnumber(L, *static_cast<lua_Number*>(arg.mValuePtr));
+        case float_number:
+            ::lua_pushnumber(L, *static_cast<lua_Number*>(arg.mValuePtr));
             break;
-            case ValueType::double_number:
-            lua_pushnumber(L, *static_cast<lua_Number*>(arg.mValuePtr));
+            case double_number:
+            ::lua_pushnumber(L, *static_cast<lua_Number*>(arg.mValuePtr));
             break;
-        case ValueType::string:
-            lua_pushstring(L, static_cast<std::string*>(arg.mValuePtr)->c_str());
+        case string:
+            ::lua_pushstring(L, static_cast<std::string*>(arg.mValuePtr)->c_str());
             break;
         default:
             break;
@@ -102,7 +106,7 @@ void LuaScript::doFunc(std::string_view funcName)
         return;
     }
 
-    int index = retVals.size();
+    auto index = retVals.size();
     for(auto& retval : retVals)
     {
         switch (retval.mValueType)
@@ -111,28 +115,28 @@ void LuaScript::doFunc(std::string_view funcName)
             break;
         case ValueType::integer:
         {
-            int value = lua_tointeger(L, -index);
-            int& valueRef = *static_cast<int*>(retval.mValuePtr);
+            auto value = ::lua_tointeger(L, -static_cast<int>(index));
+            long long& valueRef = *static_cast<long long*>(retval.mValuePtr);
             valueRef = value;
             break;
         }
         case ValueType::boolean:
         {
-            bool value = lua_toboolean(L, -index);
+            bool value = ::lua_toboolean(L, -static_cast<int>(index));
             bool& valueRef = *static_cast<bool*>(retval.mValuePtr);
             valueRef = value;
             break;
         }
         case ValueType::float_number:
         {
-            float value = lua_tonumber(L, -index);
+            double value = ::lua_tonumber(L, -static_cast<int>(index));
             float& valueRef = *static_cast<float*>(retval.mValuePtr);
-            valueRef = value;
+            valueRef = static_cast<float>(value);
             break;
         }
         case ValueType::double_number:
         {
-            double value = lua_tonumber(L, -index);
+            double value = lua_tonumber(L, -static_cast<int>(index));
             double& valueRef = *static_cast<double*>(retval.mValuePtr);
             valueRef = value;
             break;
@@ -154,65 +158,65 @@ void LuaScript::doFunc(std::string_view funcName)
 
 std::string_view LuaScript::toString(int index)
 {
-    if(!lua_isstring(L, index))
+    if(!::lua_isstring(L, index))
     {
-        std::cerr << "Failed to get string: " << lua_tostring(L, -1) << std::endl;
-        return 0;
+        std::cerr << "Failed to get string: " << ::lua_tostring(L, -1) << std::endl;
+        return "";
     }
-    return lua_tostring(L, index);
+    return ::lua_tostring(L, index);
 }
 
-int LuaScript::toInteger(int index)
+long long LuaScript::toInteger(int index)
 {
-    if(!lua_isinteger(L, index))
+    if(!::lua_isinteger(L, index))
     {
-        std::cerr << "Failed to get integer: " << lua_tostring(L, -1) << std::endl;
+        std::cerr << "Failed to get integer: " << ::lua_tostring(L, -1) << std::endl;
         return 0;
     }
-    return lua_tointeger(L, index);
+    return ::lua_tointeger(L, index);
 }
 
 int LuaScript::toBooleam(int index)
 {
     if(!lua_isboolean(L, index))
     {
-        std::cerr << "Failed to get boolean: " << lua_tostring(L, -1) << std::endl;
+        std::cerr << "Failed to get boolean: " << ::lua_tostring(L, -1) << std::endl;
         return 0;
     }
-    return lua_toboolean(L, index);
+    return ::lua_toboolean(L, index);
 }
 
 double LuaScript::toNumber(int index)
 {
-    if(!lua_isnumber(L, index))
+    if(!::lua_isnumber(L, index))
     {
-        std::cerr << "Failed to get number: " << lua_tostring(L, -1) << std::endl;
+        std::cerr << "Failed to get number: " << ::lua_tostring(L, -1) << std::endl;
         return 0;
     }
-    return lua_tonumber(L, index);
+    return ::lua_tonumber(L, index);
 }
 
 void LuaScript::pushString(std::string_view string)
 {
-    lua_pushstring(L, string.data());
+    ::lua_pushstring(L, string.data());
     mRetValCount++;
 }
 
 void LuaScript::pushInteger(int integer)
 {
-    lua_pushinteger(L, integer);
+    ::lua_pushinteger(L, integer);
     mRetValCount++;
 }
 
 void LuaScript::pushBoolean(bool boolean)
 {
-    lua_pushinteger(L, boolean);
+    ::lua_pushinteger(L, boolean);
     mRetValCount++;
 }
 
 void LuaScript::pushNumber(double number)
 {
-    lua_pushinteger(L, number);
+    ::lua_pushnumber(L, number);
     mRetValCount++;
 }
 

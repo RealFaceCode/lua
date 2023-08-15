@@ -1,4 +1,5 @@
 #include "luaScript.h"
+#include <format>
 
 int c_func(LuaScript& L)
 {   
@@ -12,11 +13,11 @@ int main()
     LuaScript lua("../../data/scripts/script.lua");
 
     lua.regFunc("update");
-    lua.regFunc(c_func, "log");
+    lua.regFunc(::c_func, "log");
 
     lua.compile();
     
-    lua.doFunc("update");
+	lua.doFunc("update");
 
     return 0;
 }
