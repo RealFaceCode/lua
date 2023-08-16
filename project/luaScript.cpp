@@ -70,8 +70,8 @@ void LuaScript::doFunc(std::string_view funcName)
         return;
     }
 
-    std::vector<FuncDescriptionValue>& args = mFuncDesc[funcName].mArgs;
-    std::vector<FuncDescriptionValue>& retVals = mFuncDesc[funcName].mRetVals;
+    std::vector<FuncDescriptionValue>& args = mFuncDesc[funcName].getArgs();
+    std::vector<FuncDescriptionValue>& retVals = mFuncDesc[funcName].getRetVals();
 
     for(auto& arg : args)
     {

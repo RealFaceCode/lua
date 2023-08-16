@@ -9,7 +9,7 @@
  */
 class FuncDescription
 {
-public:
+private:
     /**
      * @brief A vector containing descriptions of function arguments.
      */
@@ -31,6 +31,10 @@ public:
      */
     ~FuncDescription() = default;
 
+    //TODO: add comment
+    std::vector<FuncDescriptionValue>& getArgs();
+    std::vector<FuncDescriptionValue>& getRetVals();
+    
     /**
      * @brief Adds a description for a function argument.
      * 
