@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <cstring>
 
+#include "luaValueType.h"
 #include "luaValue.h"
 #include "funcDesc.h"
 #include "lambda.h"
