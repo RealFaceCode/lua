@@ -44,8 +44,8 @@ struct Lambda {
      * @return A pointer to the current lambda expression.
      */
     template<typename T>
-    static void* fn(void* new_fn = nullptr) {
-        static void* fn;
+    static T* fn(T* new_fn = nullptr) {
+        static T* fn;
         if (new_fn != nullptr)
             fn = new_fn;
         return fn;
