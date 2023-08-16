@@ -10,7 +10,7 @@
 #include <filesystem>
 #include <cstring>
 
-#include "funcDiscValue.h"
+#include "luaValue.h"
 #include "funcDesc.h"
 #include "lambda.h"
 

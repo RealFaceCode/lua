@@ -1,4 +1,4 @@
-#include "funcDiscValue.h"
+#include "luaValue.h"
 
 void LuaValue::setType(LuaValueType type)
 {

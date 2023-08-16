@@ -2,7 +2,7 @@
 #define FUNC_DESC_H
 
 #include <vector>
-#include "funcDiscValue.h"
+#include "luaValue.h"
 
 /**
  * @brief A class that holds descriptions of function arguments and return values.
