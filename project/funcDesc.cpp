@@ -1,11 +1,11 @@
 #include "funcDesc.h"
 
-std::vector<FuncDescriptionValue> &FuncDescription::getArgs()
+const std::vector<LuaValue> &FuncDescription::getArgs() const
 {
     return mArgs;
 }
 
-std::vector<FuncDescriptionValue> &FuncDescription::getRetVals()
+const std::vector<LuaValue> &FuncDescription::getRetVals() const
 {
     return mRetVals;
 }

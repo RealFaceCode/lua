@@ -12,7 +12,13 @@ int main()
 {
     LuaScript lua("../../data/scripts/script.lua");
 
-    lua.regFunc("update");
+    long long delta = 1;
+    std::string_view str = "";
+    FuncDescription descUpdate;
+    descUpdate.addArg(delta, LuaValueType::integer);
+    descUpdate.addRetVal(str, LuaValueType::string);
+
+    lua.regFunc("update",  descUpdate);
     lua.regFunc(::c_func, "log");
 
     lua.compile();

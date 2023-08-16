@@ -70,30 +70,37 @@ void LuaScript::doFunc(std::string_view funcName)
         return;
     }
 
-    std::vector<FuncDescriptionValue>& args = mFuncDesc[funcName].getArgs();
-    std::vector<FuncDescriptionValue>& retVals = mFuncDesc[funcName].getRetVals();
+    std::vector<LuaValue> const& args = mFuncDesc[funcName].getArgs();
+    std::vector<LuaValue> const& retVals = mFuncDesc[funcName].getRetVals();
 
-    for(auto& arg : args)
+    for(auto const& arg : args)
     {
-        switch (arg.mValueType)
+        switch (arg.getValueType())
         {
-        using enum ValueType;
+        using enum LuaValueType;
         case none:
             break;
         case integer:
-            ::lua_pushinteger(L, *static_cast<int*>(arg.mValuePtr));
+        {
+            auto l = arg.getValue<long long>();
+            ::lua_pushinteger(L, l);
             break;
+        }
+            
+            
         case boolean:
-            ::lua_pushboolean(L, *static_cast<bool*>(arg.mValuePtr));
+            ::lua_pushboolean(L, arg.getValue<bool>());
             break;
         case float_number:
-            ::lua_pushnumber(L, *static_cast<lua_Number*>(arg.mValuePtr));
+            ::lua_pushnumber(L, arg.getValue<double>());
             break;
             case double_number:
-            ::lua_pushnumber(L, *static_cast<lua_Number*>(arg.mValuePtr));
+            ::lua_pushnumber(L, arg.getValue<double>());
             break;
         case string:
-            ::lua_pushstring(L, static_cast<std::string*>(arg.mValuePtr)->c_str());
+            ::lua_pushstring(L, arg.getValue<std::string>().c_str());
+            break;
+        case table:
             break;
         default:
             break;
@@ -109,42 +116,54 @@ void LuaScript::doFunc(std::string_view funcName)
     auto index = retVals.size();
     for(auto& retval : retVals)
     {
-        switch (retval.mValueType)
+        switch (retval.getValueType())
         {
-        case ValueType::none:
+        using enum LuaValueType;
+        case none:
             break;
-        case ValueType::integer:
+        case integer:
         {
-            auto value = ::lua_tointeger(L, -static_cast<int>(index));
-            long long& valueRef = *static_cast<long long*>(retval.mValuePtr);
+            if(!::lua_isinteger(L, -static_cast<int>(index)))
+                throw std::invalid_argument("Failed to get return value. Expected was lua integer aka 'long long'");
+            
+            long long value = ::lua_tointeger(L, -static_cast<int>(index));
+            long long& valueRef = retval.getValue<long long>();
             valueRef = value;
             break;
         }
-        case ValueType::boolean:
+        case boolean:
         {
+            if(!lua_isboolean(L, -static_cast<int>(index)))
+                throw std::invalid_argument("Failed to get return value. Expected was boolean aka 'bool'");
             bool value = ::lua_toboolean(L, -static_cast<int>(index));
-            bool& valueRef = *static_cast<bool*>(retval.mValuePtr);
+            bool& valueRef = retval.getValue<bool>();
             valueRef = value;
             break;
         }
-        case ValueType::float_number:
+        case float_number:
         {
+            if(!::lua_isnumber(L, -static_cast<int>(index)))
+                throw std::invalid_argument("Failed to get return value. Expected was lua number aka 'double'");
             double value = ::lua_tonumber(L, -static_cast<int>(index));
-            float& valueRef = *static_cast<float*>(retval.mValuePtr);
+            float& valueRef = retval.getValue<float>();
             valueRef = static_cast<float>(value);
             break;
         }
-        case ValueType::double_number:
+        case double_number:
         {
+            if(!::lua_isnumber(L, -static_cast<int>(index)))
+                throw std::invalid_argument("Failed to get return value. Expected was lua number aka 'double'");
             double value = lua_tonumber(L, -static_cast<int>(index));
-            double& valueRef = *static_cast<double*>(retval.mValuePtr);
+            double& valueRef = retval.getValue<double>();
             valueRef = value;
             break;
         }
-        case ValueType::string:
+        case string:
         {
+            if(!::lua_isstring(L, -static_cast<int>(index)))
+                throw std::invalid_argument("Failed to get return value. Expected was string'");
             std::string_view value = lua_tostring(L, -index);
-            std::string_view& valueRef = *static_cast<std::string_view*>(retval.mValuePtr);
+            std::string_view& valueRef = retval.getValue<std::string_view>();
             valueRef = value;
             break;
         }

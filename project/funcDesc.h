@@ -13,12 +13,12 @@ private:
     /**
      * @brief A vector containing descriptions of function arguments.
      */
-    std::vector<FuncDescriptionValue> mArgs;
+    std::vector<LuaValue> mArgs;
 
     /**
      * @brief A vector containing descriptions of function return values.
      */
-    std::vector<FuncDescriptionValue> mRetVals;
+    std::vector<LuaValue> mRetVals;
 
 public:
     /**
@@ -32,8 +32,8 @@ public:
     ~FuncDescription() = default;
 
     //TODO: add comment
-    std::vector<FuncDescriptionValue>& getArgs();
-    std::vector<FuncDescriptionValue>& getRetVals();
+    const std::vector<LuaValue>& getArgs() const;
+    const std::vector<LuaValue>& getRetVals() const;
     
     /**
      * @brief Adds a description for a function argument.
@@ -43,9 +43,9 @@ public:
      * @param type The ValueType representing the type of the argument.
      */
     template<typename TYPE>
-    void addArg(const TYPE& value, const ValueType& type)
+    void addArg(const TYPE& value, const LuaValueType& type)
     {
-        mArgs.emplace_back(FuncDescriptionValue{.mValuePtr = (void*)&value, .mValueType = type});
+        mArgs.emplace_back(LuaValue(value, type));
     }
 
     /**
@@ -56,9 +56,9 @@ public:
      * @param type The ValueType representing the type of the return value.
      */
     template<typename TYPE>
-    void addRetVal(const TYPE& value, const ValueType& type)
+    void addRetVal(const TYPE& value, const LuaValueType& type)
     {
-        mRetVals.emplace_back(FuncDescriptionValue{.mValuePtr = (void*)&value, .mValueType = type});
+        mRetVals.emplace_back(LuaValue(value, type));
     }
 };
 
