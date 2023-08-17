@@ -1,5 +1,7 @@
 #include "luaScript.h"
-#include <format>
+#include "luaTable.h"
+
+#include "DynamicVar.h"
 
 int c_func(LuaScript& L)
 {   
@@ -10,6 +12,17 @@ int c_func(LuaScript& L)
 
 int main() 
 {
+    LuaTable table("first");
+    table.addValue<long long>("x", 12);
+    auto& nT = table.addValue<LuaTable>(LuaTable("second")).retrieve<LuaTable>();
+    nT.addValue<std::string_view>("name", "dave");
+    nT.addValue<LuaTable>(LuaTable("another nested"));
+    auto& nT2 = table.addValue<LuaTable>(LuaTable("third")).retrieve<LuaTable>();
+    nT2.addValue<double>(11.11);
+    nT2.addValue<LuaTable>(LuaTable());
+
+    table.print();
+
     LuaScript lua("../../data/scripts/script.lua");
 
     long long delta = 1;

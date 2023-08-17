@@ -9,10 +9,9 @@ enum class LuaValueType
     none = 0,           ///< No specific value type.
     integer = 1,        ///< Represents an integer value.
     boolean = 2,        ///< Represents a boolean value.
-    float_number = 3,   ///< Represents a float value.
-    double_number = 4,  ///< Represents a double value.
-    string = 5,         ///< Represents a string value.
-    table = 6
+    number = 3,         ///< Represents a double value.
+    string = 4,         ///< Represents a string value.
+    table = 5
 };
 
 #endif // LUA_VALUE_TYPE_H

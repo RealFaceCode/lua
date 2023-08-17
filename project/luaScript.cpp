@@ -81,20 +81,12 @@ void LuaScript::doFunc(std::string_view funcName)
         case none:
             break;
         case integer:
-        {
-            auto l = arg.getValue<long long>();
-            ::lua_pushinteger(L, l);
+            ::lua_pushinteger(L,  arg.getValue<long long>());
             break;
-        }
-            
-            
         case boolean:
             ::lua_pushboolean(L, arg.getValue<bool>());
             break;
-        case float_number:
-            ::lua_pushnumber(L, arg.getValue<double>());
-            break;
-            case double_number:
+        case number:
             ::lua_pushnumber(L, arg.getValue<double>());
             break;
         case string:
@@ -140,16 +132,7 @@ void LuaScript::doFunc(std::string_view funcName)
             valueRef = value;
             break;
         }
-        case float_number:
-        {
-            if(!::lua_isnumber(L, -static_cast<int>(index)))
-                throw std::invalid_argument("Failed to get return value. Expected was lua number aka 'double'");
-            double value = ::lua_tonumber(L, -static_cast<int>(index));
-            float& valueRef = retval.getValue<float>();
-            valueRef = static_cast<float>(value);
-            break;
-        }
-        case double_number:
+        case number:
         {
             if(!::lua_isnumber(L, -static_cast<int>(index)))
                 throw std::invalid_argument("Failed to get return value. Expected was lua number aka 'double'");
