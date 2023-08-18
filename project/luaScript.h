@@ -176,6 +176,8 @@ public:
 
 private:
     void resolveTable(LuaTable& table, int idx);
+    void keyValueTable(LuaTable& table, int idx);
+    void indexedTable(LuaTable& table, int idx, unsigned long long tableLen);
 };
 
 #endif // LUA_SCRIPT_H

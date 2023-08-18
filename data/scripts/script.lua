@@ -10,10 +10,20 @@ first = {
     nested = {
         name = "dave",
         another_nested = {
-            
+
         }
     },
     another = {
         alive = false;
     },
+}
+
+indexedTable = {
+    "banana",
+    2,
+    false,
+    {
+        "dave",
+        3.33
+    }
 }

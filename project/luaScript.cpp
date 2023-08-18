@@ -259,51 +259,86 @@ lua_State* LuaScript::getLuaState()
 void LuaScript::resolveTable(LuaTable &table, int idx)
 {
     if(auto tableLen = ::lua_rawlen(L, idx); tableLen == 0)
-    {
-        ::lua_pushnil(L);
-        
-        while(::lua_next(L, idx - 1) != 0)
-        {
-            std::string_view key;
-            if(::lua_isstring(L, idx - 1))
-            {
-                key = lua_tostring(L, idx - 1);
-                switch (const int type = ::lua_type(L, idx))
-                {
-                case LUA_TNUMBER:
-                {
-                    if(::lua_isinteger(L, idx))
-                        table.addValue<long long>(key, lua_tointeger(L, idx));
-                    else
-                        table.addValue<double>(key, lua_tonumber(L, idx));
-                    break;
-                }
-                case LUA_TBOOLEAN:
-                {
-                    table.addValue<bool>(key, ::lua_toboolean(L, idx));
-                    break;
-                }
-                case LUA_TSTRING:
-                {
-                    table.addValue<std::string_view>(key, ::lua_tostring(L, idx));
-                    break;
-                }
-                case LUA_TTABLE:
-                {
-                    LuaTable& newTable = table.addValue<LuaTable>(key, LuaTable(key)).retrieve<LuaTable>();
-                    resolveTable(newTable, idx);
-                    break;
-                }
-                default:
-                    break;
-                }
+        keyValueTable(table, idx);
+    else
+        indexedTable(table, idx, tableLen);
+}
 
-                lua_pop(L, 1);
+void LuaScript::keyValueTable(LuaTable &table, int idx)
+{
+    ::lua_pushnil(L);
+
+    while(::lua_next(L, idx - 1) != 0)
+    {
+        std::string_view key;
+        if(::lua_isstring(L, idx - 1))
+        {
+            key = lua_tostring(L, idx - 1);
+            switch (const int type = ::lua_type(L, idx))
+            {
+            case LUA_TNUMBER:
+            {
+                ::lua_isinteger(L, idx) ? table.addValue<long long>(lua_tointeger(L, idx)) : table.addValue<double>(lua_tonumber(L, idx));
             }
+            case LUA_TBOOLEAN:
+            {
+                table.addValue<bool>(key, ::lua_toboolean(L, idx));
+                break;
+            }
+            case LUA_TSTRING:
+            {
+                table.addValue<std::string_view>(key, ::lua_tostring(L, idx));
+                break;
+            }
+            case LUA_TTABLE:
+            {
+                LuaTable& newTable = table.addValue<LuaTable>(key, LuaTable(key)).retrieve<LuaTable>();
+                resolveTable(newTable, idx);
+                break;
+            }
+            default:
+                break;
+            }
+
+            lua_pop(L, 1);
         }
     }
-    else
-    {
+}
 
+void LuaScript::indexedTable(LuaTable &table, int idx, unsigned long long tableLen)
+{
+    for(int i = 1; i <= tableLen; ++i)
+    {
+        ::lua_pushinteger(L, i);
+        ::lua_gettable(L, idx - 1);
+
+        switch (const int type = ::lua_type(L, idx))
+        {
+        case LUA_TNUMBER:
+        {
+            ::lua_isinteger(L, idx) ? table.addValue<long long>(lua_tointeger(L, idx)) : table.addValue<double>(lua_tonumber(L, idx));
+            break;
+        }
+        case LUA_TBOOLEAN:
+        {
+            table.addValue<bool>(::lua_toboolean(L, idx));
+            break;
+        }
+        case LUA_TSTRING:
+        {
+            table.addValue<std::string_view>(::lua_tostring(L, idx));
+            break;
+        }
+        case LUA_TTABLE:
+        {
+            LuaTable& newTable = table.addValue<LuaTable>(LuaTable()).retrieve<LuaTable>();
+            resolveTable(newTable, idx);
+            break;
+        }
+        default:
+            break;
+        }
+
+        lua_pop(L, 1);
     }
 }

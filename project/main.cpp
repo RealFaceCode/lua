@@ -13,7 +13,7 @@ int c_func(LuaScript& L)
 int main() 
 {
     {
-        LuaTable table("first");
+        LuaTable table("temp");
         table.addValue<long long>("x", 12);
         auto& nT = table.addValue<LuaTable>(LuaTable("second")).retrieve<LuaTable>();
         nT.addValue<std::string_view>("name", "dave");
@@ -41,7 +41,10 @@ int main()
 
     auto t = lua.getTable("first");
     t.print();
-    
+
+    auto tt = lua.getTable("indexedTable");
+    tt.print();
+
 	lua.doFunc("update");
 
     return 0;
