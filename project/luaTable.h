@@ -42,7 +42,7 @@ public:
 
     void print();
 
-    LuaTableType getNextValue();
+    std::pair<std::string_view, LuaTableType> getNextValue();
     std::string_view getValueName();
     std::string_view getName() const;
 

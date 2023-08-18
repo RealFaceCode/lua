@@ -22,15 +22,15 @@ void LuaTable::print()
     resolveTable(*this, depth, rDepth);
 }
 
-LuaTableType LuaTable::getNextValue()
+std::pair<std::string_view, LuaTableType> LuaTable::getNextValue()
 {
     if(!isEnd())
     {
         auto const& [first, last] = mValues.at(mValueIndex);
         mValueIndex++;
-        return last;
+        return {first, last};
     }
-    return LuaTableType();
+    return std::pair<std::string_view, LuaTableType>();
 }
 
 std::string_view LuaTable::getValueName()
@@ -61,18 +61,18 @@ void LuaTable::resolveTable(LuaTable &table, int &depth, int& rDepth)
     depth++;
     while(!table.isEnd())
     {
-        auto value = table.getNextValue();
+        auto [name, value] = table.getNextValue();
         for(int i = 0; i < (value.hasType<LuaTable>() ? depth - rDepth : depth); i++)
             std::cout << "\t";
         
         if(value.hasValue() && value.hasType<long long>())
-            printValue<long long>(value, table.getValueName());
+            printValue<long long>(value, name);
         else if(value.hasValue() && value.hasType<double>())
-            printValue<double>(value, table.getValueName());
+            printValue<double>(value, name);
         else if(value.hasValue() && value.hasType<bool>())
-            printValue<bool>(value, table.getValueName());
+            printValue<bool>(value, name);
         else if(value.hasValue() && value.hasType<std::string_view>())
-            printValue<std::string_view>(value, table.getValueName());
+            printValue<std::string_view>(value, name);
         else if(value.hasValue() && value.hasType<LuaTable>())
         {
             rDepth++;

@@ -1,4 +1,5 @@
 #include "luaScript.h"
+#include <system_error> //TODO: remove this if functions are implemented
 
 LuaScript::LuaScript()
 {
@@ -229,7 +230,80 @@ int LuaScript::getRetValCount()
     return r;
 }
 
+void LuaScript::pushTable(const LuaTable &table)
+{
+    throw std::system_error(std::error_code(std::make_error_code(std::errc::not_supported)));
+}
+
+LuaTable LuaScript::getTable(std::string_view name)
+{
+    int idx = -1;
+    ::lua_getglobal(L, name.data());
+    if (!lua_istable(L, idx))
+    {
+        return LuaTable();       
+    }
+
+    LuaTable table(name);
+
+    resolveTable(table, idx);
+
+    return table;
+}
+
 lua_State* LuaScript::getLuaState()
 {
     return L;
+}
+
+void LuaScript::resolveTable(LuaTable &table, int idx)
+{
+    if(auto tableLen = ::lua_rawlen(L, idx); tableLen == 0)
+    {
+        ::lua_pushnil(L);
+        
+        while(::lua_next(L, idx - 1) != 0)
+        {
+            std::string_view key;
+            if(::lua_isstring(L, idx - 1))
+            {
+                key = lua_tostring(L, idx - 1);
+                switch (const int type = ::lua_type(L, idx))
+                {
+                case LUA_TNUMBER:
+                {
+                    if(::lua_isinteger(L, idx))
+                        table.addValue<long long>(key, lua_tointeger(L, idx));
+                    else
+                        table.addValue<double>(key, lua_tonumber(L, idx));
+                    break;
+                }
+                case LUA_TBOOLEAN:
+                {
+                    table.addValue<bool>(key, ::lua_toboolean(L, idx));
+                    break;
+                }
+                case LUA_TSTRING:
+                {
+                    table.addValue<std::string_view>(key, ::lua_tostring(L, idx));
+                    break;
+                }
+                case LUA_TTABLE:
+                {
+                    LuaTable& newTable = table.addValue<LuaTable>(key, LuaTable(key)).retrieve<LuaTable>();
+                    resolveTable(newTable, idx);
+                    break;
+                }
+                default:
+                    break;
+                }
+
+                lua_pop(L, 1);
+            }
+        }
+    }
+    else
+    {
+
+    }
 }

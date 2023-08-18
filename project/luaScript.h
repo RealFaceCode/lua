@@ -14,7 +14,7 @@
 #include "luaValue.h"
 #include "funcDesc.h"
 #include "lambda.h"
-
+#include "luaTable.h"
 
 /**
  * @class LuaScript
@@ -136,6 +136,10 @@ public:
      */
     int getRetValCount();
 
+    void pushTable(const LuaTable& table);
+    
+    LuaTable getTable(std::string_view name);
+
     /**
      * @brief Retrieves the Lua state associated with the LuaScript instance.
      * @return Pointer to the Lua state.
@@ -169,6 +173,9 @@ public:
             return mUserPtr[name];
         throw std::invalid_argument("Failed to get user data");
     }
+
+private:
+    void resolveTable(LuaTable& table, int idx);
 };
 
 #endif // LUA_SCRIPT_H
