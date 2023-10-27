@@ -10,6 +10,11 @@ void LuaTable::setName(std::string_view name)
     mTableName = name;
 }
 
+void LuaTable::setIndexed(bool indexed)
+{
+    mIndexed = indexed;
+}
+
 bool LuaTable::isEnd() const
 {
     return mValueIndex == mValues.size();
@@ -46,6 +51,16 @@ std::string_view LuaTable::getValueName()
 std::string_view LuaTable::getName() const
 {
     return mTableName;
+}
+
+std::size_t LuaTable::size() const
+{
+    return mValues.size();
+}
+
+bool LuaTable::isIndexed() const
+{
+    return mIndexed;
 }
 
 void LuaTable::resetIndex()
@@ -89,4 +104,5 @@ void LuaTable::resolveTable(LuaTable &table, int &depth, int& rDepth)
     for(int i = 0; i < depth; i++)
             std::cout << "\t";
     std::cout << "}" << std::endl;
+    table.resetIndex();
 }

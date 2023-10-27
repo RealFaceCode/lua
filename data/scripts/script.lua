@@ -1,5 +1,5 @@
 function update(delta)
-    log("hallo")
+    log("hello")
     print(delta)
     delta = 10
     return "!ahh"
@@ -16,6 +16,12 @@ first = {
         alive = false;
     },
 }
+first2 = {
+    nested = {
+        another_nested = {
+        }
+    },
+}
 
 indexedTable = {
     "banana",
@@ -23,6 +29,10 @@ indexedTable = {
     false,
     {
         "dave",
-        3.33
+        3.33,
+        {
+            "bla",
+            234
+        }
     }
 }

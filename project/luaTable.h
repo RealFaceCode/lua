@@ -20,12 +20,14 @@ private:
     std::string_view mTableName = "";
     std::vector<LuaTableVar> mValues = {};
     std::size_t mValueIndex = 0;
+    bool mIndexed = false;
 
 public:
     LuaTable() = default;
     explicit LuaTable(std::string_view name);
     
     void setName(std::string_view name);
+    void setIndexed(bool indexed = true);
 
     template<typename T>
     LuaTableType& addValue(T value)
@@ -40,12 +42,14 @@ public:
     }
     
     bool isEnd() const;
+    bool isIndexed() const;
 
     void print();
 
     std::pair<std::string_view, LuaTableType> getNextValue();
     std::string_view getValueName();
     std::string_view getName() const;
+    std::size_t size() const;
 
 private:
     void resetIndex();
@@ -54,7 +58,12 @@ private:
     static void printValue(LuaTableType& value, std::string_view vName)
     {
         if(vName == "")
-            std::cout << value.retrieve<T>() << "," << std::endl;
+            {
+            if(value.hasType<bool>())
+                std::cout << ((value.retrieve<bool>()) ? "true" : "false") << "," << std::endl;
+            else
+                std::cout << value.retrieve<T>() << "," << std::endl;
+        }
         else
         {
             if(value.hasType<bool>())

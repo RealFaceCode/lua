@@ -16,6 +16,19 @@
 #include "lambda.h"
 #include "luaTable.h"
 
+constexpr std::size_t Lua_lib_package     = 0x000000000000000F;
+constexpr std::size_t Lua_lib_table       = 0x00000000000000F0;
+constexpr std::size_t Lua_lib_string      = 0x0000000000000F00;
+constexpr std::size_t Lua_lib_math        = 0x000000000000F000;
+constexpr std::size_t Lua_lib_debug       = 0x00000000000F0000;
+constexpr std::size_t Lua_lib_io          = 0x0000000000F00000;
+constexpr std::size_t Lua_lib_coroutine   = 0x000000000F000000;
+constexpr std::size_t Lua_lib_os          = 0x00000000F0000000;
+constexpr std::size_t Lua_lib_utf8        = 0x0000000F00000000;
+constexpr std::size_t Lua_lib_all         = ::Lua_lib_package | ::Lua_lib_table | ::Lua_lib_string | ::Lua_lib_math |
+                                                ::Lua_lib_debug | ::Lua_lib_io | ::Lua_lib_coroutine | ::Lua_lib_os |
+                                                ::Lua_lib_utf8;
+
 /**
  * @class LuaScript
  * @brief A class for managing Lua scripts and function interactions.
@@ -40,6 +53,19 @@ public:
      * @param path Path to the Lua script file.
      */
     explicit LuaScript(const std::filesystem::path& path);
+
+/**
+     * @brief Constructor with bitmask libraries to open. Initializes Lua state and loads the libraries.
+     * @param libs Bitmask to open the lua libraries.
+     */
+    explicit LuaScript(std::size_t libs);
+
+    /**
+     * @brief Constructor with script path and bitmask libraries to open. Initializes Lua state and loads the libraries.
+     * @param path Path to the Lua script file.
+     * @param libs Bitmask to open the lua libraries.
+     */
+    explicit LuaScript(const std::filesystem::path& path, std::size_t libs);
 
     /**
      * @brief Destructor. Closes the Lua state.
@@ -136,7 +162,7 @@ public:
      */
     int getRetValCount();
 
-    void pushTable(const LuaTable& table);
+    void pushTable(LuaTable& table, long long idx = 1);
     
     LuaTable getTable(std::string_view name);
 
@@ -176,8 +202,10 @@ public:
 
 private:
     void resolveTable(LuaTable& table, int idx);
+    void resolvePushTable(LuaTable &table, long long idx);
     void keyValueTable(LuaTable& table, int idx);
     void indexedTable(LuaTable& table, int idx, unsigned long long tableLen);
+    void openLibs(std::size_t libs);
 };
 
 #endif // LUA_SCRIPT_H

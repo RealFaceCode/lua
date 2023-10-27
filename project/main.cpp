@@ -1,6 +1,5 @@
 #include "luaScript.h"
 #include "luaTable.h"
-
 #include "DynamicVar.h"
 
 int c_func(LuaScript& L)
@@ -10,9 +9,8 @@ int c_func(LuaScript& L)
     return L.getRetValCount();
 }
 
-int main() 
+void printTableTest()
 {
-    {
         LuaTable table("temp");
         table.addValue<long long>("x", 12);
         auto& nT = table.addValue<LuaTable>(LuaTable("second")).retrieve<LuaTable>();
@@ -23,10 +21,16 @@ int main()
         nT2.addValue<LuaTable>(LuaTable());
 
         table.print();
-    }
-    
+}
+
+int main() 
+{   
+    ::printTableTest();
 
     LuaScript lua("../../data/scripts/script.lua");
+
+    std::cout << std::endl;
+    std::cout << std::endl;
 
     long long delta = 1;
     std::string_view str = "";
@@ -39,11 +43,30 @@ int main()
 
     lua.compile();
 
-    auto t = lua.getTable("first");
-    t.print();
+    auto first = lua.getTable("first");
+    first.print();
 
-    auto tt = lua.getTable("indexedTable");
-    tt.print();
+    std::cout << std::endl;
+
+    first.setName("newFirst");
+    lua.pushTable(first);
+
+    auto newFirst = lua.getTable("newFirst");
+    newFirst.print();
+
+    std::cout << std::endl;
+    std::cout << std::endl;
+
+    auto indexed = lua.getTable("indexedTable");
+    indexed.print();
+
+    std::cout << std::endl;
+
+    indexed.setName("newIndexedTable");
+    lua.pushTable(indexed);
+
+    auto newIndexed = lua.getTable("newIndexedTable");
+    newIndexed.print();
 
 	lua.doFunc("update");
 

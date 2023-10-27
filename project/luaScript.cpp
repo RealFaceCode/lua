@@ -14,6 +14,19 @@ LuaScript::LuaScript(const std::filesystem::path& path)
     ::luaL_openlibs(L);
 }
 
+LuaScript::LuaScript(std::size_t libs)
+{  
+    L = ::luaL_newstate();
+    openLibs(libs);
+}
+
+LuaScript::LuaScript(const std::filesystem::path &path, std::size_t libs)
+: mPath(path)
+{
+    L = ::luaL_newstate();
+    openLibs(libs);
+}
+
 LuaScript::~LuaScript()
 {
     ::lua_close(L);
@@ -230,9 +243,102 @@ int LuaScript::getRetValCount()
     return r;
 }
 
-void LuaScript::pushTable(const LuaTable &table)
+void LuaScript::resolvePushTable(LuaTable &table, long long idx)
 {
-    throw std::system_error(std::error_code(std::make_error_code(std::errc::not_supported)));
+    if(!table.isIndexed())
+    {
+        auto size = static_cast<int>(table.size());
+        ::lua_createtable(L, 0, size);
+        while (!table.isEnd())
+        {
+            auto [name, value] = table.getNextValue();
+            if(value.hasType<long long>())
+            {
+                ::lua_pushstring(L, name.data());
+                ::lua_pushinteger(L,  value.retrieve<long long>());
+                ::lua_settable(L, -3);
+            }
+            else if(value.hasType<double>())
+            {
+                ::lua_pushstring(L, name.data());
+                ::lua_pushnumber(L,  value.retrieve<double>());
+                ::lua_settable(L, -3);
+            }
+            else if(value.hasType<bool>())
+            {
+                ::lua_pushstring(L, name.data());
+                ::lua_pushboolean(L,  value.retrieve<bool>());
+                ::lua_settable(L, -3);
+            }
+            else if(value.hasType<std::string_view>())
+            {
+                ::lua_pushstring(L, name.data());
+                ::lua_pushstring(L, value.retrieve<std::string_view>().data());
+                ::lua_settable(L, -3);
+            }
+            else if(value.hasType<LuaTable>())
+            {
+                auto t = value.retrieve<LuaTable>();
+                ::lua_pushstring(L, t.getName().data());
+                resolvePushTable(t, 1);
+                ::lua_settable(L, -3);
+            }
+            else
+            {
+                continue;
+            }
+        }
+    }
+    else
+    {
+        auto size = static_cast<int>(table.size());
+        ::lua_createtable(L, size, 0);
+        while (!table.isEnd())
+        {
+            auto [name, value] = table.getNextValue();
+            if(value.hasType<long long>())
+            {
+                ::lua_pushinteger(L,  value.retrieve<long long>());
+                ::lua_rawseti(L, -2, idx);
+                idx++;
+            }
+            else if(value.hasType<double>())
+            {
+                ::lua_pushnumber(L,  value.retrieve<double>());
+                ::lua_rawseti(L, -2, idx);
+                idx++;
+            }
+            else if(value.hasType<bool>())
+            {
+                ::lua_pushboolean(L,  value.retrieve<bool>());
+                ::lua_rawseti(L, -2, idx);
+                idx++;
+            }
+            else if(value.hasType<std::string_view>())
+            {
+                ::lua_pushstring(L,  value.retrieve<std::string_view>().data());
+                ::lua_rawseti(L, -2, idx);
+                idx++;
+            }
+            else if(value.hasType<LuaTable>())
+            {
+                auto t = value.retrieve<LuaTable>();
+                resolvePushTable(t, 1);
+                ::lua_rawseti(L, -2, idx);
+                idx++;
+            }
+            else
+            {
+                continue;
+            }
+        }
+    }
+}
+
+void LuaScript::pushTable(LuaTable &table, long long idx)
+{
+    resolvePushTable(table, idx);
+    ::lua_setglobal(L, table.getName().data());
 }
 
 LuaTable LuaScript::getTable(std::string_view name)
@@ -258,7 +364,14 @@ lua_State* LuaScript::getLuaState()
 
 void LuaScript::resolveTable(LuaTable &table, int idx)
 {
-    if(auto tableLen = ::lua_rawlen(L, idx); tableLen == 0)
+
+#if LUA_VERSION_NUM > 501
+    auto tableLen = ::lua_rawlen(L, idx);
+#else
+    auto tableLen = ::lua_objlen(L, idx);
+#endif
+
+    if(tableLen == 0)
         keyValueTable(table, idx);
     else
         indexedTable(table, idx, tableLen);
@@ -308,6 +421,7 @@ void LuaScript::keyValueTable(LuaTable &table, int idx)
 
 void LuaScript::indexedTable(LuaTable &table, int idx, unsigned long long tableLen)
 {
+    table.setIndexed();
     for(int i = 1; i <= tableLen; ++i)
     {
         ::lua_pushinteger(L, i);
@@ -342,4 +456,27 @@ void LuaScript::indexedTable(LuaTable &table, int idx, unsigned long long tableL
 
         lua_pop(L, 1);
     }
+}
+
+void LuaScript::openLibs(std::size_t libs)
+{
+    ::luaopen_base(L);
+    if (libs & ::Lua_lib_package)
+        ::luaL_requiref(L, "package", ::luaopen_package, 1);
+    if (libs & ::Lua_lib_table)
+        ::luaL_requiref(L, "table", ::luaopen_table, 1);
+    if (libs & ::Lua_lib_string)
+        ::luaL_requiref(L, "string", ::luaopen_string, 1);
+    if (libs & ::Lua_lib_math)
+        ::luaL_requiref(L, "math", ::luaopen_math, 1);
+    if (libs & ::Lua_lib_debug)
+        ::luaL_requiref(L, "debug", ::luaopen_debug, 1);
+    if (libs & ::Lua_lib_io)
+        ::luaL_requiref(L, "io", ::luaopen_io, 1);
+    if (libs & ::Lua_lib_coroutine)
+        ::luaL_requiref(L, "coroutine", ::luaopen_coroutine, 1);
+    if (libs & ::Lua_lib_os)
+        ::luaL_requiref(L, "os", ::luaopen_os, 1);
+    if (libs & ::Lua_lib_utf8)
+        ::luaL_requiref(L, "utf8", ::luaopen_utf8, 1);
 }
