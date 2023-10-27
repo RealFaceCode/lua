@@ -10,7 +10,6 @@ first = {
     nested = {
         name = "dave",
         another_nested = {
-
         }
     },
     another = {

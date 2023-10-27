@@ -7,6 +7,7 @@
 #include "DynamicVar.h"
 #include "luaValueType.h"
 #include <iostream>
+#include <type_traits>
 
 class LuaTable;
 
@@ -55,7 +56,12 @@ private:
         if(vName == "")
             std::cout << value.retrieve<T>() << "," << std::endl;
         else
-            std::cout << vName << " = " << value.retrieve<T>() << "," << std::endl;
+        {
+            if(value.hasType<bool>())
+                std::cout << vName << " = " << ((value.retrieve<bool>()) ? "true" : "false") << "," << std::endl;
+            else
+                std::cout << vName << " = " << value.retrieve<T>() << "," << std::endl;
+        }
     }
 };
 

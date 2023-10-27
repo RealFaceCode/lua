@@ -278,7 +278,8 @@ void LuaScript::keyValueTable(LuaTable &table, int idx)
             {
             case LUA_TNUMBER:
             {
-                ::lua_isinteger(L, idx) ? table.addValue<long long>(lua_tointeger(L, idx)) : table.addValue<double>(lua_tonumber(L, idx));
+                ::lua_isinteger(L, idx) ? table.addValue<long long>(key, lua_tointeger(L, idx)) : table.addValue<double>(key, lua_tonumber(L, idx));
+                break;
             }
             case LUA_TBOOLEAN:
             {
