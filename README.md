@@ -10,6 +10,10 @@ The Lua Script Manager is a C++ library that provides a convenient interface for
 
 - [lua](https://www.lua.org/docs.html)
 
+## Documentation
+
+- [Library docs](doc/usage.MD)
+
 ## Features
 
 - Easy integration of Lua scripts into C++ applications
