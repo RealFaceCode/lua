@@ -1,4 +1,4 @@
-# LuaValue
+# FuncDisc
 
 ## Example
 
