@@ -18,6 +18,6 @@ add_library(lua ${LUA_SOURCE})
 
 include_directories("dependencies/lua/src")
 
-add_executable(App ${SOURCE_FILES})
+add_library(App ${SOURCE_FILES})
 target_link_libraries(App PRIVATE lua)
 target_link_directories(App PUBLIC "dependencies/lua/src")
