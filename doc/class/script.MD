@@ -113,40 +113,40 @@ log("this is called in lua")
 
 | Function                                  | Link                               |
 | ----------------------------------------  | ---------------------------------- |
-| `LuaScript();` | [Link to functions doc](class/funcs/luascript/luascript0.MD) |
-| `explicit LuaScript(const std::filesystem::path& path);` | [Link to functions doc](class/funcs/luascript/luascript1.MD) |
-| `explicit LuaScript(std::size_t libs);` | [Link to functions doc](class/funcs/luascript/luascript2.MD) |
-| `explicit LuaScript(const std::filesystem::path& path, std::size_t libs);` | [Link to functions doc](class/funcs/luascript/luascript3.MD) |
-| `~LuaScript();` | [Link to functions doc](class/funcs/luascript/luascript4.MD) |
-| `void regFunc(std::string_view funcName, const FuncDescription& funcDesc);` | [Link to functions doc](class/funcs/luascript/regfunc0.MD) |
-| `void regFunc(std::function<int(LuaScript&)> func, std::string_view funcName, const FuncDescription& funcDesc);` | [Link to functions doc](class/funcs/luascript/regfunc1.MD) |
-| `void compile();` | [Link to functions doc](class/funcs/luascript/compile.MD) |
-| `void compileString(std::string_view luaCode);` | [Link to functions doc](class/funcs/luascript/Compilestring.MD) |
-| `void doFunc(std::string_view funcName);` | [Link to functions doc](class/funcs/luascript/dofunc.MD) |
-| `std::string_view toString(int index);` | [Link to functions doc](class/funcs/luascript/tostring.MD) |
-| `long long toInteger(int index);` | [Link to functions doc](class/funcs/luascript/tointeger.MD) |
-| `int toBooleam(int index);` | [Link to functions doc](class/funcs/luascript/toboolean.MD) |
-| `double toNumber(int index);` | [Link to functions doc](class/funcs/luascript/tonumber.MD) |
-| `void pushString(std::string_view string);` | [Link to functions doc](class/funcs/luascript/pushstring.MD) |
-| `void pushInteger(int integer);` | [Link to functions doc](class/funcs/luascript/pushInteger.MD) |
-| `void pushBoolean(bool boolean);` | [Link to functions doc](class/funcs/luascript/pushboolean.MD) |
-| `void pushNumber(double number);` | [Link to functions doc](class/funcs/luascript/pushnumber.MD) |
-| `int getRetValCount();` | [Link to functions doc](class/funcs/luascript/getretvalcount.MD) |
-| `void pushTable(LuaTable& table, long long idx);` | [Link to functions doc](class/funcs/luascript/pushtable.MD) |
-| `LuaTable getTable(std::string_view name);` | [Link to functions doc](class/funcs/luascript/gettable.MD) |
-| `lua_State* getLuaState();` | [Link to functions doc](class/funcs/luascript/getluastate.MD) |
-| `template<typename TYPE> void addUserPtr(std::string_view name, TYPE& value);` | [Link to functions doc](class/funcs/luascript/adduserptr.MD) |
-| `template<typename TYPE> TYPE& getUserPtr(std::string_view name);` | [Link to functions doc](class/funcs/luascript/getuserptr.MD) |
+| `LuaScript();` | [Link to functions doc](funcs/luascript/luascript0.MD) |
+| `explicit LuaScript(const std::filesystem::path& path);` | [Link to functions doc](funcs/luascript/luascript1.MD) |
+| `explicit LuaScript(std::size_t libs);` | [Link to functions doc](funcs/luascript/luascript2.MD) |
+| `explicit LuaScript(const std::filesystem::path& path, std::size_t libs);` | [Link to functions doc](funcs/luascript/luascript3.MD) |
+| `~LuaScript();` | [Link to functions doc](funcs/luascript/luascript4.MD) |
+| `void regFunc(std::string_view funcName, const FuncDescription& funcDesc);` | [Link to functions doc](funcs/luascript/regfunc0.MD) |
+| `void regFunc(std::function<int(LuaScript&)> func, std::string_view funcName, const FuncDescription& funcDesc);` | [Link to functions doc](funcs/luascript/regfunc1.MD) |
+| `void compile();` | [Link to functions doc](funcs/luascript/compile.MD) |
+| `void compileString(std::string_view luaCode);` | [Link to functions doc](funcs/luascript/Compilestring.MD) |
+| `void doFunc(std::string_view funcName);` | [Link to functions doc](funcs/luascript/dofunc.MD) |
+| `std::string_view toString(int index);` | [Link to functions doc](funcs/luascript/tostring.MD) |
+| `long long toInteger(int index);` | [Link to functions doc](funcs/luascript/tointeger.MD) |
+| `int toBooleam(int index);` | [Link to functions doc](funcs/luascript/toboolean.MD) |
+| `double toNumber(int index);` | [Link to functions doc](funcs/luascript/tonumber.MD) |
+| `void pushString(std::string_view string);` | [Link to functions doc](funcs/luascript/pushstring.MD) |
+| `void pushInteger(int integer);` | [Link to functions doc](funcs/luascript/pushInteger.MD) |
+| `void pushBoolean(bool boolean);` | [Link to functions doc](funcs/luascript/pushboolean.MD) |
+| `void pushNumber(double number);` | [Link to functions doc](funcs/luascript/pushnumber.MD) |
+| `int getRetValCount();` | [Link to functions doc](funcs/luascript/getretvalcount.MD) |
+| `void pushTable(LuaTable& table, long long idx);` | [Link to functions doc](funcs/luascript/pushtable.MD) |
+| `LuaTable getTable(std::string_view name);` | [Link to functions doc](funcs/luascript/gettable.MD) |
+| `lua_State* getLuaState();` | [Link to functions doc](funcs/luascript/getluastate.MD) |
+| `template<typename TYPE> void addUserPtr(std::string_view name, TYPE& value);` | [Link to functions doc](funcs/luascript/adduserptr.MD) |
+| `template<typename TYPE> TYPE& getUserPtr(std::string_view name);` | [Link to functions doc](funcs/luascript/getuserptr.MD) |
 
 ### private
 
 | Function                                  | Link                               |
 | ----------------------------------------  | ---------------------------------- |
-| `void resolveTable(LuaTable& table, int idx);` | [Link to functions doc](class/funcs/luascript/resolvetable.MD) |
-| `void resolvePushTable(LuaTable &table, long long idx);;` | [Link to functions doc](class/funcs/luascript/resolvepushtable.MD) |
-| `void keyValueTable(LuaTable& table, int idx);` | [Link to functions doc](class/funcs/luascript/keyvaluetable.MD) |
-| `void indexedTable(LuaTable& table, int idx, unsigned long long tableLen);` | [Link to functions doc](class/funcs/luascript/indexedvaluetable.MD) |
-| `void openLibs(std::size_t libs);` | [Link to functions doc](class/funcs/luascript/openLibs.MD) |
+| `void resolveTable(LuaTable& table, int idx);` | [Link to functions doc](funcs/luascript/resolvetable.MD) |
+| `void resolvePushTable(LuaTable &table, long long idx);;` | [Link to functions doc](funcs/luascript/resolvepushtable.MD) |
+| `void keyValueTable(LuaTable& table, int idx);` | [Link to functions doc](funcs/luascript/keyvaluetable.MD) |
+| `void indexedTable(LuaTable& table, int idx, unsigned long long tableLen);` | [Link to functions doc](funcs/luascript/indexedvaluetable.MD) |
+| `void openLibs(std::size_t libs);` | [Link to functions doc](funcs/luascript/openLibs.MD) |
 
 ## Defines / constexpr
 
