@@ -78,14 +78,26 @@ void LuaScript::doFunc(std::string_view funcName)
 {
     ::lua_getglobal(L, funcName.data());
 
-    if(!mFuncDesc.contains(funcName))
+    auto iter = mFuncDesc.begin(); 
+    const FuncDescription* disc = nullptr;
+
+    for (; iter != mFuncDesc.end(); iter++)
     {
-        std::cerr << "Failed to run function[" << funcName << "] - no function with this name was registred" << std::endl;
-        return;
+        if(iter->first == funcName)
+        {
+            disc = &iter->second;
+            break;
+        }
     }
 
-    std::vector<LuaValue> const& args = mFuncDesc[funcName].getArgs();
-    std::vector<LuaValue> const& retVals = mFuncDesc[funcName].getRetVals();
+    if(!disc)
+    {
+        std::cout << "Failed to run function[" << funcName << "] - no function with this name was registred" << std::endl;
+        return; //TODO: add error handling
+    }
+
+    std::vector<LuaValue> const& args = disc->getArgs();
+    std::vector<LuaValue> const& retVals = disc->getRetVals();
 
     for(auto const& arg : args)
     {
@@ -115,8 +127,8 @@ void LuaScript::doFunc(std::string_view funcName)
 
     if(lua_pcall(L, args.size(), retVals.size(), 0))
     {
-        std::cerr << "Failed to run function[" << funcName << "] - " << lua_tostring(L, -1)<< std::endl;
-        return;
+        std::cout << "Failed to run function[" << funcName << "] - " << lua_tostring(L, -1)<< std::endl;
+        return; //TODO: add error handling
     }
 
     auto index = retVals.size();
@@ -170,6 +182,8 @@ void LuaScript::doFunc(std::string_view funcName)
         index--;
     }
     lua_pop(L, retVals.size());
+
+    return; //TODO: add error handling
 }
 
 std::string_view LuaScript::toString(int index)

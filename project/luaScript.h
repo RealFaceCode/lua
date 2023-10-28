@@ -195,8 +195,13 @@ public:
     template<typename TYPE>
     TYPE& getUserPtr(std::string_view name)
     {
-        if(mUserPtr.contains(name))
-            return mUserPtr[name];
+        for (auto iter = mUserPtr.begin; iter != mUserPtr.end(); iter++)
+        {
+            if(iter->first == name)
+            {
+                return iter->second;
+            }
+        }
         throw std::invalid_argument("Failed to get user data");
     }
 
