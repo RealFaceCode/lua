@@ -5,7 +5,7 @@
 A overview of all classes and structs of this library.
 
 - [LuaScript](class/script.MD)
-- [DynamicVar](class/dynamicVar.MD)
-- [FuncDesc](class/funcDisc.MD)
-- [LuaTable](class/luaTable.MD)
-- [LuaValue](class/luaValue.MD)
+- [DynamicVar](class/dynamicvar.MD)
+- [FuncDesc](class/funcvisc.MD)
+- [LuaTable](class/luavable.MD)
+- [LuaValue](class/luavalue.MD)
