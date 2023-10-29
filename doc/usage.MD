@@ -15,3 +15,4 @@ A overview of all classes and structs of this library.
 - [StringEqual](class/stringequal.MD)
 - [TransparentHash](class/transparenthash.MD)
 - [TransparentEqual](class/transparentequal.MD)
+- [FuncInfo](class/funcinfo.MD)
