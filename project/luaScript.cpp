@@ -56,21 +56,26 @@ void LuaScript::compile()
 {
     if(!std::filesystem::exists(mPath))
     {
-        std::cerr << "Failed to load lua script with path[" << mPath << "] - " << std::strerror(errno) << std::endl;
+        std::cout << "Failed to load lua script with path[" << mPath << "] - " << std::strerror(errno) << std::endl;
+        return; //TODO: add error handling
     }
 
     if(luaL_dofile(L, mPath.string().c_str()))
     {
-        std::cerr << "Failed to load lua script with path[" << mPath << "] - " << lua_tostring(L, -1) << std::endl;
+        std::cout << "Failed to load lua script with path[" << mPath << "] - " << lua_tostring(L, -1) << std::endl;
+        return; //TODO: add error handling
     }
+    return; //TODO: add error handling
 }
 
 void LuaScript::compileString(std::string_view luaCode)
 {
     if(luaL_dostring(L, luaCode.data()))
     {
-        std::cerr << "Failed to load lua script with path[" << mPath << "] - " << lua_tostring(L, -1) << std::endl;
+        std::cout << "Failed to load lua script with path[" << mPath << "] - " << lua_tostring(L, -1) << std::endl;
+        return; //TODO: add error handling
     }
+    return; //TODO: add error handling
 }
 
 void LuaScript::doFunc(std::string_view funcName)
@@ -189,7 +194,7 @@ std::string_view LuaScript::toString(int index)
 {
     if(!::lua_isstring(L, index))
     {
-        std::cerr << "Failed to get string: " << ::lua_tostring(L, -1) << std::endl;
+        std::cout << "Failed to get string: " << ::lua_tostring(L, -1) << std::endl;
         return "";
     }
     return ::lua_tostring(L, index);
@@ -199,7 +204,7 @@ long long LuaScript::toInteger(int index)
 {
     if(!::lua_isinteger(L, index))
     {
-        std::cerr << "Failed to get integer: " << ::lua_tostring(L, -1) << std::endl;
+        std::cout << "Failed to get integer: " << ::lua_tostring(L, -1) << std::endl;
         return 0;
     }
     return ::lua_tointeger(L, index);
@@ -209,7 +214,7 @@ int LuaScript::toBooleam(int index)
 {
     if(!lua_isboolean(L, index))
     {
-        std::cerr << "Failed to get boolean: " << ::lua_tostring(L, -1) << std::endl;
+        std::cout << "Failed to get boolean: " << ::lua_tostring(L, -1) << std::endl;
         return 0;
     }
     return ::lua_toboolean(L, index);
@@ -219,7 +224,7 @@ double LuaScript::toNumber(int index)
 {
     if(!::lua_isnumber(L, index))
     {
-        std::cerr << "Failed to get number: " << ::lua_tostring(L, -1) << std::endl;
+        std::cout << "Failed to get number: " << ::lua_tostring(L, -1) << std::endl;
         return 0;
     }
     return ::lua_tonumber(L, index);
