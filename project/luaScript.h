@@ -80,13 +80,15 @@ public:
      */
     void regFunc(std::string_view funcName, const FuncDescription& funcDesc = FuncDescription());
 
+    using LuaScriptFunc = int(*)(LuaScript&);
     /**
      * @brief Registers a C++ function as a Lua function with the given name and optional function description.
      * @param func C++ function to register.
      * @param funcName Name of the Lua function.
      * @param funcDesc Function description (optional).
      */
-    void regFunc(std::function<int(LuaScript&)> func, std::string_view funcName, const FuncDescription& funcDesc = FuncDescription());
+    template<typename LuaCFunc = LuaScriptFunc>
+    void regFunc(LuaCFunc func, std::string_view funcName, const FuncDescription& funcDesc = FuncDescription());
 
     /**
      * @brief Compiles and executes the Lua script loaded from the specified file path.

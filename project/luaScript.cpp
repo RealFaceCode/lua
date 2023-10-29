@@ -38,9 +38,10 @@ void LuaScript::regFunc(std::string_view funcName, const FuncDescription& funcDe
         mFuncDesc[funcName.data()] = funcDesc;
 }
 
-void LuaScript::regFunc(std::function<int(LuaScript&)> func, std::string_view funcName, const FuncDescription& funcDesc)
+template<typename LuaCFunc>
+void LuaScript::regFunc(LuaCFunc func, std::string_view funcName, const FuncDescription& funcDesc)
 {
-    auto cFunPtr = func.target<int(*)(LuaScript&)>();
+    auto cFunPtr = func;
     static auto luaCFunc = [this, cFunPtr](lua_State const*)
     {
         return (*cFunPtr)(*this);
@@ -51,6 +52,8 @@ void LuaScript::regFunc(std::function<int(LuaScript&)> func, std::string_view fu
     lua_register(L, funcName.data(), luaBaseFunc);
     regFunc(funcName, funcDesc);
 }
+
+template void LuaScript::regFunc<int(*)(LuaScript&)>(int(*)(LuaScript&), std::string_view, const FuncDescription&);
 
 void LuaScript::compile()
 {
