@@ -1,5 +1,7 @@
 # Lua script manager documentation
 
+A C++ library for managing Lua scripts and facilitating interactions with Lua functions.
+
 ## Class reference
 
 A overview of all classes and structs of this library.

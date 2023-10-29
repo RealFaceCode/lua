@@ -1,5 +1,7 @@
 # LuaScript
 
+Main class for handling with lua scripts.
+
 ## Example
 
 ### Compile and run script
