@@ -120,11 +120,11 @@ log("this is called in lua")
 | `explicit LuaScript(std::size_t libs);` | [Link to functions doc](funcs/luascript/luascript2.MD) |
 | `explicit LuaScript(const std::filesystem::path& path, std::size_t libs);` | [Link to functions doc](funcs/luascript/luascript3.MD) |
 | `~LuaScript();` | [Link to functions doc](funcs/luascript/luascript4.MD) |
-| `void regFunc(std::string_view funcName, const FuncDescription& funcDesc);` | [Link to functions doc](funcs/luascript/regfunc0.MD) |
-| `void regFunc(std::function<int(LuaScript&)> func, std::string_view funcName, const FuncDescription& funcDesc);` | [Link to functions doc](funcs/luascript/regfunc1.MD) |
-| `void compile();` | [Link to functions doc](funcs/luascript/compile.MD) |
-| `void compileString(std::string_view luaCode);` | [Link to functions doc](funcs/luascript/Compilestring.MD) |
-| `void doFunc(std::string_view funcName);` | [Link to functions doc](funcs/luascript/dofunc.MD) |
+| `FuncInfo regFunc(std::string_view funcName, const FuncDescription& funcDesc);` | [Link to functions doc](funcs/luascript/regfunc0.MD) |
+| `FuncInfo regFunc(std::function<int(LuaScript&)> func, std::string_view funcName, const FuncDescription& funcDesc);` | [Link to functions doc](funcs/luascript/regfunc1.MD) |
+| `FuncInfo compile();` | [Link to functions doc](funcs/luascript/compile.MD) |
+| `FuncInfo compileString(std::string_view luaCode);` | [Link to functions doc](funcs/luascript/Compilestring.MD) |
+| `FuncInfo doFunc(std::string_view funcName);` | [Link to functions doc](funcs/luascript/dofunc.MD) |
 | `std::string_view toString(int index);` | [Link to functions doc](funcs/luascript/tostring.MD) |
 | `long long toInteger(int index);` | [Link to functions doc](funcs/luascript/tointeger.MD) |
 | `int toBooleam(int index);` | [Link to functions doc](funcs/luascript/toboolean.MD) |
@@ -196,6 +196,7 @@ constexpr std::size_t Lua_lib_all         = ::Lua_lib_package | ::Lua_lib_table 
 #include "lambda.h"
 #include "luaTable.h"
 #include "util.h"
+#include "funcInfo.h"
 ```
 
 ## Other links

@@ -31,15 +31,22 @@ LuaScript::~LuaScript()
     ::lua_close(L);
 }
 
-void LuaScript::regFunc(std::string_view funcName, const FuncDescription& funcDesc)
+FuncInfo LuaScript::regFunc(std::string_view funcName, const FuncDescription& funcDesc)
 {
     ::lua_getglobal(L, funcName.data());
     if(!mFuncDesc.contains(funcName) && !lua_isfunction(L, -1))
+    {
         mFuncDesc[funcName.data()] = funcDesc;
+        return FuncInfo(FuncInfoType::OK);
+    }
+
+    std::string errmsg;
+    errmsg.append("Failed to register function[").append(funcName).append("] - Function name is already registred!");
+    return FuncInfo(errmsg, FuncInfoType::REGISTER);
 }
 
 template<typename LuaCFunc>
-void LuaScript::regFunc(LuaCFunc func, std::string_view funcName, const FuncDescription& funcDesc)
+FuncInfo LuaScript::regFunc(LuaCFunc func, std::string_view funcName, const FuncDescription& funcDesc)
 {
     auto cFunPtr = func;
     static auto luaCFunc = [this, cFunPtr](lua_State const*)
@@ -48,41 +55,49 @@ void LuaScript::regFunc(LuaCFunc func, std::string_view funcName, const FuncDesc
     };
 
     auto luaBaseFunc = Lambda::ptr<int, lua_CFunction>(luaCFunc);
+    auto info = regFunc(funcName, funcDesc);
 
-    lua_register(L, funcName.data(), luaBaseFunc);
-    regFunc(funcName, funcDesc);
+    if(info)
+        lua_register(L, funcName.data(), luaBaseFunc);
+    return info;
 }
 
-template void LuaScript::regFunc<int(*)(LuaScript&)>(int(*)(LuaScript&), std::string_view, const FuncDescription&);
+template FuncInfo LuaScript::regFunc<int(*)(LuaScript&)>(int(*)(LuaScript&), std::string_view, const FuncDescription&);
 
-void LuaScript::compile()
+FuncInfo LuaScript::compile()
 {
+    using enum FuncInfoType;
     if(!std::filesystem::exists(mPath))
-    {
-        std::cout << "Failed to load lua script with path[" << mPath << "] - " << std::strerror(errno) << std::endl;
-        return; //TODO: add error handling
+    {   
+        std::string errmsg;
+        errmsg.append("Failed to load lua script with path[").append(mPath.string()).append("] - ").append(std::strerror(errno));
+        return FuncInfo(errmsg, OK);
     }
 
     if(luaL_dofile(L, mPath.string().c_str()))
     {
-        std::cout << "Failed to load lua script with path[" << mPath << "] - " << lua_tostring(L, -1) << std::endl;
-        return; //TODO: add error handling
+        std::string errmsg;
+        errmsg.append("Failed to compile lua script with path[").append(mPath.string()).append("] - ").append(lua_tostring(L, -1));
+        return FuncInfo(errmsg, COMPILE);
     }
-    return; //TODO: add error handling
+    return FuncInfo(OK);
 }
 
-void LuaScript::compileString(std::string_view luaCode)
+FuncInfo LuaScript::compileString(std::string_view luaCode)
 {
+    using enum FuncInfoType;
     if(luaL_dostring(L, luaCode.data()))
     {
-        std::cout << "Failed to load lua script with path[" << mPath << "] - " << lua_tostring(L, -1) << std::endl;
-        return; //TODO: add error handling
+        std::string errmsg;
+        errmsg.append("Failed to compile lua script with path[").append(mPath.string()).append("] - ").append(lua_tostring(L, -1));
+        return FuncInfo(errmsg, COMPILE);
     }
-    return; //TODO: add error handling
+    return FuncInfo(OK);
 }
 
-void LuaScript::doFunc(std::string_view funcName)
+FuncInfo LuaScript::doFunc(std::string_view funcName)
 {
+    using enum FuncInfoType;
     ::lua_getglobal(L, funcName.data());
 
     auto iter = mFuncDesc.begin(); 
@@ -99,8 +114,9 @@ void LuaScript::doFunc(std::string_view funcName)
 
     if(!disc)
     {
-        std::cout << "Failed to run function[" << funcName << "] - no function with this name was registred" << std::endl;
-        return; //TODO: add error handling
+        std::string errmsg;
+        errmsg.append("Failed to run function[").append(funcName).append("] - no function with this name was registred");
+        return FuncInfo(errmsg, RUN);
     }
 
     std::vector<LuaValue> const& args = disc->getArgs();
@@ -134,8 +150,9 @@ void LuaScript::doFunc(std::string_view funcName)
 
     if(lua_pcall(L, args.size(), retVals.size(), 0))
     {
-        std::cout << "Failed to run function[" << funcName << "] - " << lua_tostring(L, -1)<< std::endl;
-        return; //TODO: add error handling
+        std::string errmsg;
+        errmsg.append("Failed to run function[").append(funcName).append("] - ").append(lua_tostring(L, -1));
+        return FuncInfo(errmsg, RUN);
     }
 
     auto index = retVals.size();
@@ -150,7 +167,6 @@ void LuaScript::doFunc(std::string_view funcName)
         {
             if(!::lua_isinteger(L, -static_cast<int>(index)))
                 throw std::invalid_argument("Failed to get return value. Expected was lua integer aka 'long long'");
-            
             long long value = ::lua_tointeger(L, -static_cast<int>(index));
             long long& valueRef = retval.getValue<long long>();
             valueRef = value;
@@ -190,7 +206,7 @@ void LuaScript::doFunc(std::string_view funcName)
     }
     lua_pop(L, retVals.size());
 
-    return; //TODO: add error handling
+    return FuncInfo(OK);
 }
 
 std::string_view LuaScript::toString(int index)

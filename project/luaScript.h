@@ -16,6 +16,7 @@
 #include "lambda.h"
 #include "luaTable.h"
 #include "util.h"
+#include "funcInfo.h"
 
 constexpr std::size_t Lua_lib_package     = 0x000000000000000F;
 constexpr std::size_t Lua_lib_table       = 0x00000000000000F0;
@@ -78,7 +79,7 @@ public:
      * @param funcName Name of the Lua function.
      * @param funcDesc Function description (optional).
      */
-    void regFunc(std::string_view funcName, const FuncDescription& funcDesc = FuncDescription());
+    FuncInfo regFunc(std::string_view funcName, const FuncDescription& funcDesc = FuncDescription());
 
     using LuaScriptFunc = int(*)(LuaScript&);
     /**
@@ -88,24 +89,24 @@ public:
      * @param funcDesc Function description (optional).
      */
     template<typename LuaCFunc = LuaScriptFunc>
-    void regFunc(LuaCFunc func, std::string_view funcName, const FuncDescription& funcDesc = FuncDescription());
+    FuncInfo regFunc(LuaCFunc func, std::string_view funcName, const FuncDescription& funcDesc = FuncDescription());
 
     /**
      * @brief Compiles and executes the Lua script loaded from the specified file path.
      */
-    void compile();
+    FuncInfo compile();
 
     /**
      * @brief Compiles and executes the given Lua code string.
      * @param luaCode Lua code string to compile and execute.
      */
-    void compileString(std::string_view luaCode);
+    FuncInfo compileString(std::string_view luaCode);
 
     /**
      * @brief Calls a Lua function with the given name.
      * @param funcName Name of the Lua function to call.
      */
-    void doFunc(std::string_view funcName);
+    FuncInfo doFunc(std::string_view funcName);
 
     /**
      * @brief Converts a Lua value at the specified index to a string.
