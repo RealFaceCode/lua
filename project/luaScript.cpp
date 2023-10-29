@@ -1,5 +1,4 @@
 #include "luaScript.h"
-#include <system_error> //TODO: remove this if functions are implemented
 
 LuaScript::LuaScript()
 {
@@ -36,7 +35,7 @@ void LuaScript::regFunc(std::string_view funcName, const FuncDescription& funcDe
 {
     ::lua_getglobal(L, funcName.data());
     if(!mFuncDesc.contains(funcName) && !lua_isfunction(L, -1))
-        mFuncDesc[funcName] = funcDesc;
+        mFuncDesc[funcName.data()] = funcDesc;
 }
 
 void LuaScript::regFunc(std::function<int(LuaScript&)> func, std::string_view funcName, const FuncDescription& funcDesc)

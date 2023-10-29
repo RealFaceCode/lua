@@ -15,6 +15,7 @@
 #include "funcDesc.h"
 #include "lambda.h"
 #include "luaTable.h"
+#include "util.h"
 
 constexpr std::size_t Lua_lib_package     = 0x000000000000000F;
 constexpr std::size_t Lua_lib_table       = 0x00000000000000F0;
@@ -36,8 +37,8 @@ constexpr std::size_t Lua_lib_all         = ::Lua_lib_package | ::Lua_lib_table 
 class LuaScript 
 {
 private:
-    std::unordered_map<std::string_view, void*> mUserPtr = {}; /**< Map of user data pointers. */
-    std::unordered_map<std::string_view, FuncDescription> mFuncDesc = {}; /**< Map of function descriptions. */
+    std::unordered_map<std::string, void*, TransparentHash, TransparentEqual> mUserPtr = {}; /**< Map of user data pointers. */
+    std::unordered_map<std::string, FuncDescription, TransparentHash, TransparentEqual> mFuncDesc = {}; /**< Map of function descriptions. */
     lua_State* L = nullptr; /**< Lua state instance. */
     std::filesystem::path mPath = ""; /**< Path to the Lua script. */
     int mRetValCount = 0; /**< Return value count for Lua function calls. */
@@ -182,7 +183,7 @@ public:
     void addUserPtr(std::string_view name, TYPE& value)
     {
         if(!mUserPtr.contains(name))
-            mUserPtr[name] = value;
+            mUserPtr[name.data()] = value;
     }
 
     /**
