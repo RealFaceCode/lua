@@ -9,3 +9,7 @@ A overview of all classes and structs of this library.
 - [FuncDesc](class/funcdisc.MD)
 - [LuaTable](class/luatable.MD)
 - [LuaValue](class/luavalue.MD)
+- [StringHash](class/stringhash.MD)
+- [StringEqual](class/stringequal.MD)
+- [TransparentHash](class/transparenthash.MD)
+- [TransparentEqual](class/transparentequal.MD)

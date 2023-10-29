@@ -193,6 +193,7 @@ constexpr std::size_t Lua_lib_all         = ::Lua_lib_package | ::Lua_lib_table 
 #include "funcDesc.h"
 #include "lambda.h"
 #include "luaTable.h"
+#include "util.h"
 ```
 
 ## Other links
