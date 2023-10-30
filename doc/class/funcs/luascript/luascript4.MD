@@ -1,6 +1,6 @@
 # LuaScript - ~LuaScript()
 
-Basic Deconstructor for the `LuaScript` object. The lua state woll be destroyed and all saved data ne freed.
+Basic Deconstructor for the `LuaScript` object. The lua state will be destroyed and all saved data ne freed.
 
 ## Example
 
