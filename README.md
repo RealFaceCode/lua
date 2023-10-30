@@ -70,4 +70,4 @@ The Lua Script Manager is open-source and distributed under the MIT License. See
 
 ## Contact
 
-For any questions or inquiries, please contact [me](realfacecode@gmail.com).
+For any questions or inquiries, please contact me on realfacecode@gmail.com.
