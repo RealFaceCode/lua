@@ -58,6 +58,7 @@ script.compile();
 ```
 
 For more detailed usage instructions, please refer to the documentation and code examples in the repository.
+-  [Example project](https://github.com/RealFaceCode/luascriptexample.git)
 
 ## Contributing
 
