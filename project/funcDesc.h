@@ -2,7 +2,13 @@
 #define FUNC_DESC_H
 
 #include <vector>
-#include "luaValue.h"
+#include "DynamicVar.h"
+#include "luaTable.h"
+#include <memory>
+
+
+using LuaDescValue = DynamicVar<long long, double, bool, std::string, LuaTable>;
+using LuaDescValueR = DynamicVar<long long*, double*, bool*, std::string*, LuaTable*>;
 
 /**
  * @brief A class that holds descriptions of function arguments and return values.
@@ -13,12 +19,12 @@ private:
     /**
      * @brief A vector containing descriptions of function arguments.
      */
-    std::vector<LuaValue> mArgs;
+    std::vector<LuaDescValue> mArgs;
 
     /**
      * @brief A vector containing descriptions of function return values.
      */
-    std::vector<LuaValue> mRetVals;
+    std::vector<LuaDescValueR> mRetVals;
 
 public:
     /**
@@ -32,34 +38,26 @@ public:
     ~FuncDescription() = default;
 
     //TODO: add comment
-    const std::vector<LuaValue>& getArgs() const;
-    const std::vector<LuaValue>& getRetVals() const;
+    std::vector<LuaDescValue>& getArgs();
+    std::vector<LuaDescValueR>& getRetVals();
     
     /**
      * @brief Adds a description for a function argument.
      * 
      * @tparam TYPE The type of the argument value.
      * @param value The value of the argument.
-     * @param type The ValueType representing the type of the argument.
      */
-    template<typename TYPE>
-    void addArg(const TYPE& value, const LuaValueType& type)
-    {
-        mArgs.emplace_back(LuaValue(value, type));
-    }
+    template<typename Type>
+    void addArg(const Type& value);
 
     /**
      * @brief Adds a description for a function return value.
      * 
      * @tparam TYPE The type of the return value.
      * @param value The value of the return value.
-     * @param type The ValueType representing the type of the return value.
      */
-    template<typename TYPE>
-    void addRetVal(const TYPE& value, const LuaValueType& type)
-    {
-        mRetVals.emplace_back(LuaValue(value, type));
-    }
+    template<typename Type>
+    void addRetVal(Type& value);
 };
 
 #endif // FUNC_DESC_H

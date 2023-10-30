@@ -86,8 +86,8 @@ void LuaTable::resolveTable(LuaTable &table, int &depth, int& rDepth)
             printValue<double>(value, name);
         else if(value.hasValue() && value.hasType<bool>())
             printValue<bool>(value, name);
-        else if(value.hasValue() && value.hasType<std::string_view>())
-            printValue<std::string_view>(value, name);
+        else if(value.hasValue() && value.hasType<std::string>())
+            printValue<std::string>(value, name);
         else if(value.hasValue() && value.hasType<LuaTable>())
         {
             rDepth++;

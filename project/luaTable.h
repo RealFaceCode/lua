@@ -5,14 +5,13 @@
 #include <any>
 #include <vector>
 #include "DynamicVar.h"
-#include "luaValueType.h"
 #include <iostream>
 #include <type_traits>
 
 class LuaTable;
 
-using LuaTableType = DynamicVar<long long, double, bool, std::string_view, LuaTable>;
-using LuaTableVar = std::pair<std::string_view, LuaTableType>;
+using LuaTableType = DynamicVar<long long, double, bool, std::string, LuaTable>;
+using LuaTableVar = std::pair<std::string, LuaTableType>;
 
 class LuaTable
 {
@@ -32,13 +31,13 @@ public:
     template<typename T>
     LuaTableType& addValue(T value)
     {
-        return mValues.emplace_back(std::string_view(""), LuaTableType(value)).second;
+        return mValues.emplace_back(std::string(""), LuaTableType(value)).second;
     }
 
     template<typename T>
     LuaTableType& addValue(std::string_view name, T value)
     {
-        return mValues.emplace_back(name, LuaTableType(value)).second;
+        return mValues.emplace_back(std::string(name), LuaTableType(value)).second;
     }
     
     bool isEnd() const;

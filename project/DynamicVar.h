@@ -53,7 +53,7 @@ public:
     }
 
     template<typename T>
-    const T& retrieve() const
+    const T& retrieve_c() const
     {
         static_assert((std::is_same_v<T, AllowedTypes> || ...), "Type not allowed");
         if (hasValue()) 

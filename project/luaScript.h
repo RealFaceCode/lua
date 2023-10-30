@@ -10,8 +10,6 @@
 #include <filesystem>
 #include <cstring>
 
-#include "luaValueType.h"
-#include "luaValue.h"
 #include "funcDesc.h"
 #include "lambda.h"
 #include "luaTable.h"
@@ -39,7 +37,7 @@ class LuaScript
 {
 private:
     std::unordered_map<std::string, void*, TransparentHash, TransparentEqual> mUserPtr = {}; /**< Map of user data pointers. */
-    std::unordered_map<std::string, FuncDescription, TransparentHash, TransparentEqual> mFuncDesc = {}; /**< Map of function descriptions. */
+    std::unordered_map<std::string, FuncDescription*, TransparentHash, TransparentEqual> mFuncDesc = {}; /**< Map of function descriptions. */
     lua_State* L = nullptr; /**< Lua state instance. */
     std::filesystem::path mPath = ""; /**< Path to the Lua script. */
     int mRetValCount = 0; /**< Return value count for Lua function calls. */
@@ -79,6 +77,7 @@ public:
      * @param funcName Name of the Lua function.
      * @param funcDesc Function description (optional).
      */
+    FuncInfo regFunc(std::string_view funcName, FuncDescription& funcDesc);
     FuncInfo regFunc(std::string_view funcName, const FuncDescription& funcDesc = FuncDescription());
 
     using LuaScriptFunc = int(*)(LuaScript&);
@@ -215,6 +214,8 @@ private:
     void keyValueTable(LuaTable& table, int idx);
     void indexedTable(LuaTable& table, int idx, unsigned long long tableLen);
     void openLibs(std::size_t libs);
+    void resolveArgs(std::vector<LuaDescValue>& args);
+    void resolveRets(std::vector<LuaDescValueR>& retVals);
 };
 
 #endif // LUA_SCRIPT_H

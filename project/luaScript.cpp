@@ -31,12 +31,26 @@ LuaScript::~LuaScript()
     ::lua_close(L);
 }
 
-FuncInfo LuaScript::regFunc(std::string_view funcName, const FuncDescription& funcDesc)
+FuncInfo LuaScript::regFunc(std::string_view funcName, FuncDescription& funcDesc)
 {
     ::lua_getglobal(L, funcName.data());
     if(!mFuncDesc.contains(funcName) && !lua_isfunction(L, -1))
     {
-        mFuncDesc[funcName.data()] = funcDesc;
+        mFuncDesc.try_emplace(funcName.data(), &funcDesc);
+        return FuncInfo(FuncInfoType::OK);
+    }
+
+    std::string errmsg;
+    errmsg.append("Failed to register function[").append(funcName).append("] - Function name is already registred!");
+    return FuncInfo(errmsg, FuncInfoType::REGISTER);
+}
+
+FuncInfo LuaScript::regFunc(std::string_view funcName, const FuncDescription& funcDesc)
+{
+::lua_getglobal(L, funcName.data());
+    if(!mFuncDesc.contains(funcName) && !lua_isfunction(L, -1))
+    {
+        mFuncDesc.try_emplace(funcName.data(), const_cast<FuncDescription*>(&funcDesc));
         return FuncInfo(FuncInfoType::OK);
     }
 
@@ -100,14 +114,13 @@ FuncInfo LuaScript::doFunc(std::string_view funcName)
     using enum FuncInfoType;
     ::lua_getglobal(L, funcName.data());
 
-    auto iter = mFuncDesc.begin(); 
-    const FuncDescription* disc = nullptr;
+    FuncDescription* disc = nullptr;
 
-    for (; iter != mFuncDesc.end(); iter++)
+    for(auto const& [key, value] : mFuncDesc)
     {
-        if(iter->first == funcName)
+        if(key == funcName)
         {
-            disc = &iter->second;
+            disc = value;
             break;
         }
     }
@@ -119,34 +132,10 @@ FuncInfo LuaScript::doFunc(std::string_view funcName)
         return FuncInfo(errmsg, RUN);
     }
 
-    std::vector<LuaValue> const& args = disc->getArgs();
-    std::vector<LuaValue> const& retVals = disc->getRetVals();
+    std::vector<LuaDescValue>& args = disc->getArgs();
+    std::vector<LuaDescValueR>& retVals = disc->getRetVals();
 
-    for(auto const& arg : args)
-    {
-        switch (arg.getValueType())
-        {
-        using enum LuaValueType;
-        case none:
-            break;
-        case integer:
-            ::lua_pushinteger(L,  arg.getValue<long long>());
-            break;
-        case boolean:
-            ::lua_pushboolean(L, arg.getValue<bool>());
-            break;
-        case number:
-            ::lua_pushnumber(L, arg.getValue<double>());
-            break;
-        case string:
-            ::lua_pushstring(L, arg.getValue<std::string>().c_str());
-            break;
-        case table:
-            break;
-        default:
-            break;
-        }
-    }
+    resolveArgs(args);
 
     if(lua_pcall(L, args.size(), retVals.size(), 0))
     {
@@ -155,55 +144,8 @@ FuncInfo LuaScript::doFunc(std::string_view funcName)
         return FuncInfo(errmsg, RUN);
     }
 
-    auto index = retVals.size();
-    for(auto& retval : retVals)
-    {
-        switch (retval.getValueType())
-        {
-        using enum LuaValueType;
-        case none:
-            break;
-        case integer:
-        {
-            if(!::lua_isinteger(L, -static_cast<int>(index)))
-                throw std::invalid_argument("Failed to get return value. Expected was lua integer aka 'long long'");
-            long long value = ::lua_tointeger(L, -static_cast<int>(index));
-            long long& valueRef = retval.getValue<long long>();
-            valueRef = value;
-            break;
-        }
-        case boolean:
-        {
-            if(!lua_isboolean(L, -static_cast<int>(index)))
-                throw std::invalid_argument("Failed to get return value. Expected was boolean aka 'bool'");
-            bool value = ::lua_toboolean(L, -static_cast<int>(index));
-            bool& valueRef = retval.getValue<bool>();
-            valueRef = value;
-            break;
-        }
-        case number:
-        {
-            if(!::lua_isnumber(L, -static_cast<int>(index)))
-                throw std::invalid_argument("Failed to get return value. Expected was lua number aka 'double'");
-            double value = lua_tonumber(L, -static_cast<int>(index));
-            double& valueRef = retval.getValue<double>();
-            valueRef = value;
-            break;
-        }
-        case string:
-        {
-            if(!::lua_isstring(L, -static_cast<int>(index)))
-                throw std::invalid_argument("Failed to get return value. Expected was string'");
-            std::string value = lua_tostring(L, -index);
-            std::string& valueRef = retval.getValue<std::string>();
-            valueRef = value;
-            break;
-        }
-        default:
-            break;
-        }
-        index--;
-    }
+    resolveRets(retVals);
+    
     lua_pop(L, retVals.size());
 
     return FuncInfo(OK);
@@ -307,10 +249,10 @@ void LuaScript::resolvePushTable(LuaTable &table, long long idx)
                 ::lua_pushboolean(L,  value.retrieve<bool>());
                 ::lua_settable(L, -3);
             }
-            else if(value.hasType<std::string_view>())
+            else if(value.hasType<std::string>())
             {
                 ::lua_pushstring(L, name.data());
-                ::lua_pushstring(L, value.retrieve<std::string_view>().data());
+                ::lua_pushstring(L, value.retrieve<std::string>().data());
                 ::lua_settable(L, -3);
             }
             else if(value.hasType<LuaTable>())
@@ -351,9 +293,9 @@ void LuaScript::resolvePushTable(LuaTable &table, long long idx)
                 ::lua_rawseti(L, -2, idx);
                 idx++;
             }
-            else if(value.hasType<std::string_view>())
+            else if(value.hasType<std::string>())
             {
-                ::lua_pushstring(L,  value.retrieve<std::string_view>().data());
+                ::lua_pushstring(L,  value.retrieve<std::string>().data());
                 ::lua_rawseti(L, -2, idx);
                 idx++;
             }
@@ -438,7 +380,7 @@ void LuaScript::keyValueTable(LuaTable &table, int idx)
             }
             case LUA_TSTRING:
             {
-                table.addValue<std::string_view>(key, ::lua_tostring(L, idx));
+                table.addValue<std::string>(key, ::lua_tostring(L, idx));
                 break;
             }
             case LUA_TTABLE:
@@ -478,7 +420,7 @@ void LuaScript::indexedTable(LuaTable &table, int idx, unsigned long long tableL
         }
         case LUA_TSTRING:
         {
-            table.addValue<std::string_view>(::lua_tostring(L, idx));
+            table.addValue<std::string>(::lua_tostring(L, idx));
             break;
         }
         case LUA_TTABLE:
@@ -516,4 +458,76 @@ void LuaScript::openLibs(std::size_t libs)
         ::luaL_requiref(L, "os", ::luaopen_os, 1);
     if (libs & ::Lua_lib_utf8)
         ::luaL_requiref(L, "utf8", ::luaopen_utf8, 1);
+}
+
+void LuaScript::resolveArgs(std::vector<LuaDescValue>& args)
+{
+    for(auto& arg : args)
+    {
+        if(arg.hasType<long long>() && arg.hasValue())
+        {
+            auto t = arg.retrieve<long long>();
+            ::lua_pushinteger(L,  t);
+            continue;
+        } 
+        if(arg.hasType<bool>() && arg.hasValue())
+        {
+            ::lua_pushboolean(L,  arg.retrieve<bool>());
+            continue;
+        }
+        if(arg.hasType<double>() && arg.hasValue())
+        {
+            ::lua_pushnumber(L,  arg.retrieve<double>());
+            continue;
+        }
+        if(arg.hasType<std::string>() && arg.hasValue())
+        {
+            ::lua_pushstring(L,  arg.retrieve<std::string>().data());
+            continue;
+        }
+        if(arg.hasType<LuaTable>() && arg.hasValue())
+        {
+            pushTable(arg.retrieve<LuaTable>());
+            continue;
+        }
+    }
+}
+
+void LuaScript::resolveRets(std::vector<LuaDescValueR> &retVals)
+{
+    auto index = retVals.size();
+    for(auto& retVal : retVals)
+    {
+        if(retVal.hasType<long long*>() && retVal.hasValue())
+        {
+            if(!::lua_isinteger(L, -static_cast<int>(index)))
+                throw std::invalid_argument("Failed to get return value. Expected was lua integer aka 'long long'");
+            *retVal.retrieve<long long*>() = ::lua_tointeger(L, -static_cast<int>(index));
+        } 
+        else if(retVal.hasType<bool*>() && retVal.hasValue())
+        {
+            if(!lua_isboolean(L, -static_cast<int>(index)))
+                throw std::invalid_argument("Failed to get return value. Expected was boolean aka 'bool'");
+            *retVal.retrieve<bool*>() = ::lua_toboolean(L, -static_cast<int>(index));
+        }
+        else if(retVal.hasType<double*>() && retVal.hasValue())
+        {
+            if(!::lua_isnumber(L, -static_cast<int>(index)))
+                throw std::invalid_argument("Failed to get return value. Expected was lua number aka 'double'");
+            *retVal.retrieve<double*>() = lua_tonumber(L, -static_cast<int>(index));
+        }
+        else if(retVal.hasType<std::string*>() && retVal.hasValue())
+        {
+            if(!::lua_isstring(L, -static_cast<int>(index)))
+                throw std::invalid_argument("Failed to get return value. Expected was string'");
+            *retVal.retrieve<std::string*>() = lua_tostring(L, -index);
+        }
+        else if(retVal.hasType<LuaTable*>() && retVal.hasValue())
+        {
+            if(!::lua_isstring(L, -static_cast<int>(index)))
+                throw std::invalid_argument("Failed to get return value. Expected was string'");
+            //TODO: implement
+        }
+        index--;
+    }
 }
