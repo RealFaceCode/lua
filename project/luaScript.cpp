@@ -194,8 +194,8 @@ FuncInfo LuaScript::doFunc(std::string_view funcName)
         {
             if(!::lua_isstring(L, -static_cast<int>(index)))
                 throw std::invalid_argument("Failed to get return value. Expected was string'");
-            std::string_view value = lua_tostring(L, -index);
-            std::string_view& valueRef = retval.getValue<std::string_view>();
+            std::string value = lua_tostring(L, -index);
+            std::string& valueRef = retval.getValue<std::string>();
             valueRef = value;
             break;
         }
