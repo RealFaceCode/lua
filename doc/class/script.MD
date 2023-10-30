@@ -120,8 +120,9 @@ log("this is called in lua")
 | `explicit LuaScript(std::size_t libs);` | [Link to functions doc](funcs/luascript/luascript2.MD) |
 | `explicit LuaScript(const std::filesystem::path& path, std::size_t libs);` | [Link to functions doc](funcs/luascript/luascript3.MD) |
 | `~LuaScript();` | [Link to functions doc](funcs/luascript/luascript4.MD) |
-| `FuncInfo regFunc(std::string_view funcName, const FuncDescription& funcDesc);` | [Link to functions doc](funcs/luascript/regfunc0.MD) |
-| `FuncInfo regFunc(std::function<int(LuaScript&)> func, std::string_view funcName, const FuncDescription& funcDesc);` | [Link to functions doc](funcs/luascript/regfunc1.MD) |
+| `FuncInfo regFunc(std::string_view funcName, FuncDescription& funcDesc);` | [Link to functions doc](funcs/luascript/regfunc0.MD) |
+| `FuncInfo regFunc(std::string_view funcName, const FuncDescription& funcDesc);` | [Link to functions doc](funcs/luascript/regfunc1.MD) |
+| `FuncInfo regFunc(std::function<int(LuaScript&)> func, std::string_view funcName, const FuncDescription& funcDesc);` | [Link to functions doc](funcs/luascript/regfunc2.MD) |
 | `FuncInfo compile();` | [Link to functions doc](funcs/luascript/compile.MD) |
 | `FuncInfo compileString(std::string_view luaCode);` | [Link to functions doc](funcs/luascript/Compilestring.MD) |
 | `FuncInfo doFunc(std::string_view funcName);` | [Link to functions doc](funcs/luascript/dofunc.MD) |
@@ -149,6 +150,8 @@ log("this is called in lua")
 | `void keyValueTable(LuaTable& table, int idx);` | [Link to functions doc](funcs/luascript/keyvaluetable.MD) |
 | `void indexedTable(LuaTable& table, int idx, unsigned long long tableLen);` | [Link to functions doc](funcs/luascript/indexedvaluetable.MD) |
 | `void openLibs(std::size_t libs);` | [Link to functions doc](funcs/luascript/openLibs.MD) |
+| `void resolveArgs(std::vector<LuaDescValue>& args);` | [Link to functions doc](funcs/luascript/resolveargs.MD) |
+| `void resolveRets(std::vector<LuaDescValueR>& retVals);` | [Link to functions doc](funcs/luascript/resolverets.MD) |
 
 ## Defines / constexpr
 
