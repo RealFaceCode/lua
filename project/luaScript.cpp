@@ -71,7 +71,7 @@ FuncInfo LuaScript::compile()
     {   
         std::string errmsg;
         errmsg.append("Failed to load lua script with path[").append(mPath.string()).append("] - ").append(std::strerror(errno));
-        return FuncInfo(errmsg, OK);
+        return FuncInfo(errmsg, COMPILE);
     }
 
     if(luaL_dofile(L, mPath.string().c_str()))
